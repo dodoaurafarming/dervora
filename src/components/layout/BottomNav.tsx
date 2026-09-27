@@ -19,7 +19,7 @@ export const BottomNav: React.FC = () => {
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
-          
+
           return (
             <Link
               key={item.label}

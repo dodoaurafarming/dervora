@@ -1,8 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart } from 'lucide-react';
-import { Badge } from '../ui/Badge';
-import { getImageUrl } from '../../utils/imageUrl';
 import type { Product } from '../../data/types';
 
 interface ProductCardProps {
@@ -24,13 +22,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       {/* Image Container */}
       <div className="relative aspect-[4/5] bg-dervora-cream/30 overflow-hidden">
         <img
-          src={getImageUrl(`images/products/${product.id}.jpg`)}
+          src={product.image}
           alt={product.name}
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-          onError={(e) => {
-            // Fallback jika gambar tidak ditemukan
-            (e.target as HTMLImageElement).src = getImageUrl('images/products/serum.jpg');
-          }}
         />
 
         {/* Match Badge — untuk variant catalog atau showMatchScore */}
@@ -67,7 +61,6 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           {product.name}
         </h3>
 
-        {/* Ingredients — untuk variant catalog */}
         {variant === 'catalog' && (
           <p className="font-body text-[10px] text-dervora-dark/60 mb-2 line-clamp-1">
             {product.ingredients.slice(0, 2).join(' • ')}

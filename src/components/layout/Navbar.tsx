@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Bell } from 'lucide-react';
 import { Button } from '../ui/Button';
+import { getImageUrl } from '../../utils/imageUrl';
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
@@ -19,7 +20,7 @@ export const Navbar: React.FC = () => {
       {/* Kiri: Logo */}
       <Link to="/" className="flex items-center gap-3">
         <img 
-          src={`${import.meta.env.BASE_URL}images/logo-icon.png`} 
+          src={getImageUrl('images/logo-icon.png')}
           alt="Dervora Logo" 
           className="w-12 h-12 object-contain" 
         />
@@ -30,7 +31,6 @@ export const Navbar: React.FC = () => {
 
       {/* Kanan: Menu Desktop & Actions */}
       <div className="flex items-center gap-8">
-        
         {/* Menu Desktop */}
         <div className="hidden md:flex gap-6">
           {navLinks.map((link) => {
@@ -60,7 +60,7 @@ export const Navbar: React.FC = () => {
           {isLoggedIn ? (
             <Link to="/profile">
               <img
-                src="/images/avatar-placeholder.png"
+                src={getImageUrl('images/logo-icon.png')}
                 alt="Profile"
                 className="w-8 h-8 rounded-full object-cover border border-dervora-primary"
               />
@@ -75,7 +75,6 @@ export const Navbar: React.FC = () => {
             </Button>
           )}
         </div>
-        
       </div>
     </nav>
   );

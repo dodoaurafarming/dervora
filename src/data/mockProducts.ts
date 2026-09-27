@@ -13,7 +13,14 @@ export const mockProducts: Product[] = [
     skinTypes: ["All", "Sensitive", "Dry"],
     concerns: ["Dryness", "Redness"],
     ingredients: ["Hyaluronic Acid", "Ceramide"],
-    description: "Pembersih wajah lembut tanpa membuat kulit terasa kering."
+    description: "Pembersih wajah lembut tanpa membuat kulit terasa kering.",
+    size: "150ml",
+    bpom: "NA18241234567",
+    halal: true,
+    rating: 4.8,
+    reviewCount: 124,
+    howToUse: "Basahi wajah, busakan secukupnya, pijat lembut, bilas dengan air hangat.",
+    notes: "Cocok untuk semua jenis kulit. Hindari area mata."
   },
   {
     id: "p2",
@@ -26,7 +33,14 @@ export const mockProducts: Product[] = [
     skinTypes: ["Normal", "Combination", "Oily"],
     concerns: ["Dullness", "Dark spots"],
     ingredients: ["Niacinamide 10%", "Centella Asiatica"],
-    description: "Serum untuk mencerahkan wajah dan menyamarkan noda hitam."
+    description: "Serum untuk mencerahkan wajah dan menyamarkan noda hitam.",
+    size: "30ml",
+    bpom: "NA18241234568",
+    halal: true,
+    rating: 4.9,
+    reviewCount: 256,
+    howToUse: "Teteskan 2-3 tetes setelah toner, tepuk lembut hingga meresap.",
+    notes: "Gunakan sunscreen di pagi hari. Patch test sebelum penggunaan pertama."
   },
   {
     id: "p3",
@@ -39,7 +53,14 @@ export const mockProducts: Product[] = [
     skinTypes: ["Dry", "Sensitive", "Normal"],
     concerns: ["Dryness", "Redness", "Sensitivity"],
     ingredients: ["Ceramide", "Centella Asiatica", "Hyaluronic Acid"],
-    description: "Pelembap kaya yang memperkuat skin barrier dan menenangkan kulit."
+    description: "Pelembap kaya yang memperkuat skin barrier dan menenangkan kulit.",
+    size: "50ml",
+    bpom: "NA18241234569",
+    halal: true,
+    rating: 4.7,
+    reviewCount: 189,
+    howToUse: "Oleskan secukupnya pada wajah setelah serum, pagi dan malam.",
+    notes: "Cocok untuk kulit kering dan sensitif."
   },
   {
     id: "p4",
@@ -52,7 +73,14 @@ export const mockProducts: Product[] = [
     skinTypes: ["Normal", "Combination", "Oily"],
     concerns: ["Sun protection", "Dullness"],
     ingredients: ["Zinc Oxide", "Niacinamide"],
-    description: "Sunscreen ringan dengan SPF 50 PA++++ untuk melindungi kulit dari sinar UV."
+    description: "Sunscreen ringan dengan SPF 50 PA++++ untuk melindungi kulit dari sinar UV.",
+    size: "40ml",
+    bpom: "NA18241234570",
+    halal: true,
+    rating: 4.8,
+    reviewCount: 312,
+    howToUse: "Oleskan 15 menit sebelum aktivitas outdoor. Reapply setiap 2-3 jam.",
+    notes: "Wajib digunakan setiap hari, bahkan di dalam ruangan."
   },
   {
     id: "p5",
@@ -65,7 +93,14 @@ export const mockProducts: Product[] = [
     skinTypes: ["Normal", "Combination", "Oily"],
     concerns: ["Excess Oil", "Acne"],
     ingredients: ["Salicylic Acid", "Tea Tree"],
-    description: "Pembersih berbusa lembut untuk kulit berminyak."
+    description: "Pembersih berbusa lembut untuk kulit berminyak.",
+    size: "150ml",
+    bpom: "NA18241234571",
+    halal: true,
+    rating: 4.6,
+    reviewCount: 98,
+    howToUse: "Basahi wajah, busakan, pijat lembut, bilas.",
+    notes: "Cocok untuk kulit berminyak dan berjerawat."
   },
   {
     id: "p6",
@@ -78,7 +113,14 @@ export const mockProducts: Product[] = [
     skinTypes: ["Dry", "Normal", "Sensitive"],
     concerns: ["Dryness", "Dullness"],
     ingredients: ["Rose Water", "Hyaluronic Acid", "Glycerin"],
-    description: "Toner hydrating dengan rose water untuk kulit kering."
+    description: "Toner hydrating dengan rose water untuk kulit kering.",
+    size: "200ml",
+    bpom: "NA18241234572",
+    halal: true,
+    rating: 4.7,
+    reviewCount: 145,
+    howToUse: "Tuang ke kapas, usap lembut ke seluruh wajah setelah cleanser.",
+    notes: "Bebas alkohol, cocok untuk kulit sensitif."
   },
   {
     id: "p7",
@@ -91,7 +133,14 @@ export const mockProducts: Product[] = [
     skinTypes: ["Combination", "Oily"],
     concerns: ["Acne", "Dullness", "Uneven texture"],
     ingredients: ["Glycolic Acid", "Salicylic Acid"],
-    description: "Toner eksfoliasi untuk kulit tidak rata dan berjerawat."
+    description: "Toner eksfoliasi untuk kulit tidak rata dan berjerawat.",
+    size: "150ml",
+    bpom: "NA18241234573",
+    halal: true,
+    rating: 4.5,
+    reviewCount: 78,
+    howToUse: "Gunakan 2-3 kali seminggu, tuang ke kapas, usap hindari area mata.",
+    notes: "Jangan digunakan bersamaan dengan retinol. Gunakan sunscreen."
   },
   {
     id: "p8",
@@ -104,7 +153,14 @@ export const mockProducts: Product[] = [
     skinTypes: ["Normal", "Combination", "Oily"],
     concerns: ["Dullness", "Dark spots"],
     ingredients: ["Vitamin C 15%", "Ferulic Acid", "Vitamin E"],
-    description: "Serum vitamin C untuk kulit cerah dan glowing."
+    description: "Serum vitamin C untuk kulit cerah dan glowing.",
+    size: "30ml",
+    bpom: "NA18241234574",
+    halal: true,
+    rating: 4.9,
+    reviewCount: 287,
+    howToUse: "Teteskan 2-3 tetes di pagi hari setelah toner.",
+    notes: "Simpan di tempat sejuk dan gelap. Gunakan sunscreen."
   },
   {
     id: "p9",
@@ -117,7 +173,14 @@ export const mockProducts: Product[] = [
     skinTypes: ["Normal", "Combination"],
     concerns: ["Fine lines", "Dullness"],
     ingredients: ["Retinol 0.5%", "Peptides", "Niacinamide"],
-    description: "Serum retinol untuk regenerasi kulit malam hari."
+    description: "Serum retinol untuk regenerasi kulit malam hari.",
+    size: "30ml",
+    bpom: "NA18241234575",
+    halal: true,
+    rating: 4.6,
+    reviewCount: 134,
+    howToUse: "Gunakan malam hari, 2-3 tetes setelah toner. Mulai 2x seminggu.",
+    notes: "Hindari penggunaan bersamaan dengan AHA/BHA. Wajib pakai sunscreen di pagi hari."
   },
   {
     id: "p10",
@@ -130,7 +193,14 @@ export const mockProducts: Product[] = [
     skinTypes: ["Oily", "Combination", "Acne-prone"],
     concerns: ["Excess Oil", "Acne"],
     ingredients: ["Hyaluronic Acid", "Niacinamide", "Green Tea"],
-    description: "Pelembap gel ringan tanpa minyak untuk kulit berminyak."
+    description: "Pelembap gel ringan tanpa minyak untuk kulit berminyak.",
+    size: "50ml",
+    bpom: "NA18241234576",
+    halal: true,
+    rating: 4.7,
+    reviewCount: 167,
+    howToUse: "Oleskan pada wajah setelah serum, pagi dan malam.",
+    notes: "Non-comedogenic, cocok untuk kulit berminyak."
   },
   {
     id: "p11",
@@ -143,7 +213,14 @@ export const mockProducts: Product[] = [
     skinTypes: ["Dry", "Normal"],
     concerns: ["Dryness", "Fine lines"],
     ingredients: ["Shea Butter", "Ceramide", "Squalane"],
-    description: "Krim malam kaya untuk kulit kering dan mature."
+    description: "Krim malam kaya untuk kulit kering dan mature.",
+    size: "50ml",
+    bpom: "NA18241234577",
+    halal: true,
+    rating: 4.8,
+    reviewCount: 203,
+    howToUse: "Oleskan pada wajah setiap malam sebelum tidur.",
+    notes: "Cocok untuk kulit kering dan mature."
   },
   {
     id: "p12",
@@ -156,6 +233,13 @@ export const mockProducts: Product[] = [
     skinTypes: ["All"],
     concerns: ["Sun protection", "Dullness"],
     ingredients: ["Zinc Oxide", "Titanium Dioxide", "Niacinamide"],
-    description: "Sunscreen dengan sedikit tint untuk meratakan warna kulit."
+    description: "Sunscreen dengan sedikit tint untuk meratakan warna kulit.",
+    size: "40ml",
+    bpom: "NA18241234578",
+    halal: true,
+    rating: 4.7,
+    reviewCount: 178,
+    howToUse: "Oleskan 15 menit sebelum aktivitas outdoor. Reapply setiap 2-3 jam.",
+    notes: "Tersedia dalam 2 shade. Cocok untuk semua jenis kulit."
   }
 ];

@@ -10,6 +10,13 @@ export interface Product {
   concerns: string[];
   ingredients: string[];
   description: string;
+  size: string;
+  bpom: string;
+  halal: boolean;
+  rating: number;
+  reviewCount: number;
+  howToUse: string;
+  notes: string;
 }
 
 export interface Ingredient {
