@@ -19,7 +19,7 @@ export const Navbar: React.FC = () => {
       {/* Kiri: Logo */}
       <Link to="/" className="flex items-center gap-3">
         <img 
-          src="/images/logo-icon.png" 
+          src={`${import.meta.env.BASE_URL}images/logo-icon.png`} 
           alt="Dervora Logo" 
           className="w-12 h-12 object-contain" 
         />
