@@ -13,7 +13,7 @@ export const HomePage: React.FC = () => {
       <section className="relative w-full h-[70vh] md:h-[50vh] min-h-[500px] overflow-hidden">
         {/* Background Image (Fokus ke Kanan di Mobile) */}
         <img 
-          src="/images/hero.jpg" 
+          src="${import.meta.env.BASE_URL}images/hero.jpg" 
           alt="Dervora — Your skin, your little self-care journey" 
           className="absolute inset-0 w-full h-full object-cover object-[70%_center] md:object-center" 
         />
@@ -98,7 +98,7 @@ export const HomePage: React.FC = () => {
       <section className="relative w-full min-h-[380px] md:min-h-[450px] overflow-hidden flex items-center justify-center">
         {/* Background Image (Lokal) */}
         <img 
-          src="/images/cta-bg.jpg" 
+          src="${import.meta.env.BASE_URL}images/cta-bg.jpg" 
           alt="Dervora skincare products"
           className="absolute inset-0 w-full h-full object-cover object-center bg-dervora-beige"
         />

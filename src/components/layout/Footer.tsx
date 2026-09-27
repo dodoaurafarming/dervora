@@ -11,7 +11,7 @@ export const Footer: React.FC = () => {
           {/* Kolom 1 — Brand */}
           <div>
             <Link to="/" className="flex items-center gap-3 mb-5">
-              <img src="/images/logo-icon.png" alt="Dervora" className="w-10 h-10 object-contain" />
+              <img src="${import.meta.env.BASE_URL}images/logo-icon.png" alt="Dervora" className="w-10 h-10 object-contain" />
               <span className="font-heading text-2xl font-bold text-dervora-primary">
                 Dervora
               </span>

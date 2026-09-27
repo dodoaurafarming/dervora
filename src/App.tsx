@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import { Navbar } from './components/layout/Navbar';
 import { BottomNav } from './components/layout/BottomNav';
 import { Footer } from './components/layout/Footer';
@@ -25,5 +25,4 @@ export const App: React.FC = () => {
   );
 };
 
-// TAMBAHKAN BARIS INI:
 export default App;
