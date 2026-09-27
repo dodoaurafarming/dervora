@@ -1,4 +1,5 @@
 import type { Product } from './types';
+import { getImageUrl } from '../utils/imageUrl';
 
 export const mockProducts: Product[] = [
   {
@@ -7,12 +8,12 @@ export const mockProducts: Product[] = [
     brand: "Dervora",
     price: 95000,
     category: "Cleanser",
-    image: "${import.meta.env.BASE_URL}images/products/cleanser.jpg",
+    image: getImageUrl('images/products/cleanser.jpg'),
     matchScore: 90,
     skinTypes: ["All", "Sensitive", "Dry"],
     concerns: ["Dryness", "Redness"],
     ingredients: ["Hyaluronic Acid", "Ceramide"],
-    description: "Pembersih wajah lembut tanpa membuat kulit terasa ketarik."
+    description: "Pembersih wajah lembut tanpa membuat kulit terasa kering."
   },
   {
     id: "p2",
@@ -20,7 +21,7 @@ export const mockProducts: Product[] = [
     brand: "Dervora",
     price: 125000,
     category: "Serum",
-    image: "${import.meta.env.BASE_URL}images/products/serum.jpg",
+    image: getImageUrl('images/products/serum.jpg'),
     matchScore: 88,
     skinTypes: ["Normal", "Combination", "Oily"],
     concerns: ["Dullness", "Dark spots"],
@@ -33,12 +34,12 @@ export const mockProducts: Product[] = [
     brand: "Dervora",
     price: 145000,
     category: "Moisturizer",
-    image: "${import.meta.env.BASE_URL}images/products/moisturizer.jpg",
-    matchScore: 92,
-    skinTypes: ["Dry", "Normal", "Sensitive"],
-    concerns: ["Skin barrier", "Dryness"],
-    ingredients: ["Ceramide", "Panthenol"],
-    description: "Pelembap untuk memperbaiki skin barrier dan menenangkan kemerahan."
+    image: getImageUrl('images/products/moisturizer.jpg'),
+    matchScore: 85,
+    skinTypes: ["Dry", "Sensitive", "Normal"],
+    concerns: ["Dryness", "Redness", "Sensitivity"],
+    ingredients: ["Ceramide", "Centella Asiatica", "Hyaluronic Acid"],
+    description: "Pelembap kaya yang memperkuat skin barrier dan menenangkan kulit."
   },
   {
     id: "p4",
@@ -46,11 +47,115 @@ export const mockProducts: Product[] = [
     brand: "Dervora",
     price: 139000,
     category: "Sunscreen",
-    image: "${import.meta.env.BASE_URL}images/products/sunscreen.jpg",
+    image: getImageUrl('images/products/sunscreen.jpg'),
     matchScore: 85,
     skinTypes: ["Normal", "Combination", "Oily"],
     concerns: ["Sun protection", "Dullness"],
     ingredients: ["Zinc Oxide", "Niacinamide"],
     description: "Sunscreen ringan dengan SPF 50 PA++++ untuk melindungi kulit dari sinar UV."
+  },
+  {
+    id: "p5",
+    name: "Gentle Foaming Cleanser",
+    brand: "Dervora",
+    price: 89000,
+    category: "Cleanser",
+    image: getImageUrl('images/products/cleanser.jpg'),
+    matchScore: 87,
+    skinTypes: ["Normal", "Combination", "Oily"],
+    concerns: ["Excess Oil", "Acne"],
+    ingredients: ["Salicylic Acid", "Tea Tree"],
+    description: "Pembersih berbusa lembut untuk kulit berminyak."
+  },
+  {
+    id: "p6",
+    name: "Hydrating Rose Toner",
+    brand: "Dervora",
+    price: 99000,
+    category: "Toner",
+    image: getImageUrl('images/products/toner.jpg'),
+    matchScore: 90,
+    skinTypes: ["Dry", "Normal", "Sensitive"],
+    concerns: ["Dryness", "Dullness"],
+    ingredients: ["Rose Water", "Hyaluronic Acid", "Glycerin"],
+    description: "Toner hydrating dengan rose water untuk kulit kering."
+  },
+  {
+    id: "p7",
+    name: "Exfoliating AHA/BHA Toner",
+    brand: "Dervora",
+    price: 119000,
+    category: "Toner",
+    image: getImageUrl('images/products/toner.jpg'),
+    matchScore: 82,
+    skinTypes: ["Combination", "Oily"],
+    concerns: ["Acne", "Dullness", "Uneven texture"],
+    ingredients: ["Glycolic Acid", "Salicylic Acid"],
+    description: "Toner eksfoliasi untuk kulit tidak rata dan berjerawat."
+  },
+  {
+    id: "p8",
+    name: "Vitamin C Brightening Serum",
+    brand: "Dervora",
+    price: 165000,
+    category: "Serum",
+    image: getImageUrl('images/products/serum.jpg'),
+    matchScore: 93,
+    skinTypes: ["Normal", "Combination", "Oily"],
+    concerns: ["Dullness", "Dark spots"],
+    ingredients: ["Vitamin C 15%", "Ferulic Acid", "Vitamin E"],
+    description: "Serum vitamin C untuk kulit cerah dan glowing."
+  },
+  {
+    id: "p9",
+    name: "Retinol Night Serum",
+    brand: "Dervora",
+    price: 185000,
+    category: "Serum",
+    image: getImageUrl('images/products/serum.jpg'),
+    matchScore: 80,
+    skinTypes: ["Normal", "Combination"],
+    concerns: ["Fine lines", "Dullness"],
+    ingredients: ["Retinol 0.5%", "Peptides", "Niacinamide"],
+    description: "Serum retinol untuk regenerasi kulit malam hari."
+  },
+  {
+    id: "p10",
+    name: "Oil-Free Gel Moisturizer",
+    brand: "Dervora",
+    price: 115000,
+    category: "Moisturizer",
+    image: getImageUrl('images/products/moisturizer.jpg'),
+    matchScore: 88,
+    skinTypes: ["Oily", "Combination", "Acne-prone"],
+    concerns: ["Excess Oil", "Acne"],
+    ingredients: ["Hyaluronic Acid", "Niacinamide", "Green Tea"],
+    description: "Pelembap gel ringan tanpa minyak untuk kulit berminyak."
+  },
+  {
+    id: "p11",
+    name: "Rich Night Cream",
+    brand: "Dervora",
+    price: 175000,
+    category: "Moisturizer",
+    image: getImageUrl('images/products/moisturizer.jpg'),
+    matchScore: 85,
+    skinTypes: ["Dry", "Normal"],
+    concerns: ["Dryness", "Fine lines"],
+    ingredients: ["Shea Butter", "Ceramide", "Squalane"],
+    description: "Krim malam kaya untuk kulit kering dan mature."
+  },
+  {
+    id: "p12",
+    name: "Tinted Sunscreen SPF 50 PA++++",
+    brand: "Dervora",
+    price: 149000,
+    category: "Sunscreen",
+    image: getImageUrl('images/products/sunscreen.jpg'),
+    matchScore: 86,
+    skinTypes: ["All"],
+    concerns: ["Sun protection", "Dullness"],
+    ingredients: ["Zinc Oxide", "Titanium Dioxide", "Niacinamide"],
+    description: "Sunscreen dengan sedikit tint untuk meratakan warna kulit."
   }
 ];
