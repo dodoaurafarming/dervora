@@ -1,22 +1,31 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Heart, Star, ArrowLeft } from 'lucide-react';
-import { mockProducts } from '../../data/mockProducts';
+import { useProduct } from '../../hooks/useProducts';
 import { Button } from '../../components/ui/Button';
-import { Badge } from '../../components/ui/Badge';
 
 export const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const product = mockProducts.find((p) => p.id === id);
+  const { product, loading, error } = useProduct(id ? parseInt(id, 10) : null);
 
-  if (!product) {
+  // Loading
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-dervora-cream flex items-center justify-center">
+        <p className="font-heading italic text-xl text-dervora-dark/60">Memuat...</p>
+      </div>
+    );
+  }
+
+  // Error / Not Found
+  if (error || !product) {
     return (
       <div className="min-h-screen bg-dervora-cream flex flex-col items-center justify-center px-6 py-16">
         <h1 className="font-heading text-3xl md:text-4xl font-bold text-dervora-primary mb-4">
           Produk tidak ditemukan
         </h1>
         <p className="font-body text-base text-dervora-dark/70 mb-8">
-          Produk yang kamu cari tidak tersedia.
+          {error || 'Produk yang kamu cari tidak tersedia.'}
         </p>
         <Link to="/products">
           <Button variant="primary" size="lg">
@@ -32,7 +41,11 @@ export const ProductDetailPage: React.FC = () => {
       <Star
         key={i}
         size={16}
-        className={i < Math.floor(rating) ? 'text-dervora-primary fill-dervora-primary' : 'text-dervora-dark/30'}
+        className={
+          i < Math.floor(rating)
+            ? 'text-dervora-primary fill-dervora-primary'
+            : 'text-dervora-dark/30'
+        }
       />
     ));
   };
@@ -53,49 +66,51 @@ export const ProductDetailPage: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
           {/* Kolom Kiri: Gambar */}
           <div className="aspect-[4/5] rounded-2xl overflow-hidden bg-dervora-beige/30">
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-full object-cover"
-            />
+            {product.imageUrl ? (
+              <img
+                src={product.imageUrl}
+                alt={product.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <span className="font-heading italic text-dervora-dark/40">
+                  No Image
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Kolom Kanan: Info */}
           <div>
-            {/* Category Badge */}
             <span className="inline-block px-3 py-1 bg-dervora-blush text-dervora-dark rounded-full font-body text-xs uppercase tracking-wider">
-              {product.category}
+              {product.category?.name || 'Uncategorized'}
             </span>
 
-            {/* Judul */}
             <h1 className="font-heading text-3xl md:text-5xl font-bold text-dervora-primary mt-4 leading-tight">
               {product.name}
             </h1>
 
-            {/* Brand */}
             <p className="font-body text-base text-dervora-dark/70 mt-2">
-              {product.brand}
+              {product.brand.name}
             </p>
 
-            {/* Rating */}
             <div className="flex items-center gap-2 mt-3">
-              <div className="flex">{renderStars(product.rating)}</div>
+              <div className="flex">
+                {product.rating ? renderStars(product.rating) : renderStars(0)}
+              </div>
               <span className="font-body text-sm text-dervora-dark/60">
-                {product.rating} ({product.reviewCount} ulasan)
+                {product.rating ? product.rating.toFixed(1) : '-'} (
+                {product.reviewCount || 0} ulasan)
               </span>
             </div>
 
-            {/* Harga */}
             <p className="font-heading text-3xl md:text-4xl font-bold text-dervora-primary mt-4">
-              Rp {product.price.toLocaleString('id-ID')}
+              {product.price
+                ? `Rp ${product.price.toLocaleString('id-ID')}`
+                : 'Hubungi Kami'}
             </p>
 
-            {/* Match Badge */}
-            <div className="mt-4">
-              <Badge label={`${product.matchScore}% Match`} type="match" />
-            </div>
-
-            {/* Tombol Aksi */}
             <div className="flex flex-col sm:flex-row gap-3 mt-6">
               <Button variant="primary" size="lg" className="whitespace-nowrap">
                 <Heart size={18} className="inline mr-2" />
@@ -108,73 +123,77 @@ export const ProductDetailPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Section: Deskripsi */}
+        {/* Deskripsi */}
         <section className="mt-12">
           <h2 className="font-heading text-2xl font-bold text-dervora-primary mb-3">
             Deskripsi
           </h2>
           <p className="font-body text-base text-dervora-dark/80 leading-relaxed">
-            {product.description}
+            {product.description || 'Belum tersedia.'}
           </p>
         </section>
 
-        {/* Section: Key Ingredients */}
-        <section className="mt-8">
-          <h2 className="font-heading text-2xl font-bold text-dervora-primary mb-3">
-            Key Ingredients
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {product.ingredients.map((ing, i) => (
-              <span
-                key={i}
-                className="px-3 py-1 bg-dervora-beige text-dervora-dark rounded-full font-body text-sm"
-              >
-                {ing}
-              </span>
-            ))}
-          </div>
-        </section>
+        {/* Key Ingredients */}
+        {product.ingredients.length > 0 && (
+          <section className="mt-8">
+            <h2 className="font-heading text-2xl font-bold text-dervora-primary mb-3">
+              Key Ingredients
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {product.ingredients.map((ing, i) => (
+                <span
+                  key={i}
+                  className="px-3 py-1 bg-dervora-beige text-dervora-dark rounded-full font-body text-sm"
+                >
+                  {ing.ingredient.name}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
 
-        {/* Section: Suitable For */}
-        <section className="mt-8">
-          <h2 className="font-heading text-2xl font-bold text-dervora-primary mb-3">
-            Cocok Untuk
-          </h2>
-          <div className="flex flex-wrap gap-2">
-            {product.skinTypes.map((s, i) => (
-              <span
-                key={i}
-                className="px-3 py-1 bg-dervora-blush/50 text-dervora-dark rounded-full font-body text-sm"
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-        </section>
+        {/* Suitable For */}
+        {product.skinTypes && product.skinTypes.length > 0 && (
+          <section className="mt-8">
+            <h2 className="font-heading text-2xl font-bold text-dervora-primary mb-3">
+              Cocok Untuk
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {product.skinTypes.map((s, i) => (
+                <span
+                  key={i}
+                  className="px-3 py-1 bg-dervora-blush/50 text-dervora-dark rounded-full font-body text-sm"
+                >
+                  {s}
+                </span>
+              ))}
+            </div>
+          </section>
+        )}
 
-        {/* Section: Cara Pakai */}
+        {/* Cara Pakai */}
         <section className="mt-8">
           <h2 className="font-heading text-2xl font-bold text-dervora-primary mb-3">
             Cara Pakai
           </h2>
           <p className="font-body text-base text-dervora-dark/80 leading-relaxed">
-            {product.howToUse}
+            {product.howToUse || 'Belum tersedia.'}
           </p>
         </section>
 
-        {/* Section: Catatan */}
+        {/* Catatan */}
         <section className="mt-8">
           <div className="border border-dashed border-dervora-dark/30 bg-dervora-blush/20 rounded-2xl p-5">
             <h3 className="font-heading text-lg font-bold text-dervora-primary mb-2">
               ⚠️ Catatan
             </h3>
             <p className="font-body text-sm text-dervora-dark/80 leading-relaxed">
-              {product.notes}
+              {product.notes || 'Belum tersedia.'}
             </p>
           </div>
         </section>
 
-        {/* Section: Info Produk */}
+        {/* Info Produk */}
         <section className="mt-8">
           <h2 className="font-heading text-2xl font-bold text-dervora-primary mb-3">
             Info Produk
@@ -182,19 +201,19 @@ export const ProductDetailPage: React.FC = () => {
           <div className="grid grid-cols-2 gap-4 font-body text-sm text-dervora-dark/80">
             <div>
               <span className="block text-dervora-dark/50">Ukuran</span>
-              {product.size}
+              {product.size || '-'}
             </div>
             <div>
               <span className="block text-dervora-dark/50">BPOM</span>
-              {product.bpom}
+              {product.bpom || '-'}
             </div>
             <div>
               <span className="block text-dervora-dark/50">Halal</span>
-              {product.halal ? '✓ Halal' : 'Tidak'}
+              {product.halal ? '✓ Halal' : '-'}
             </div>
             <div>
               <span className="block text-dervora-dark/50">Kategori</span>
-              {product.category}
+              {product.category?.name || '-'}
             </div>
           </div>
         </section>
