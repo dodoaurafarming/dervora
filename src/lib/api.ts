@@ -74,6 +74,7 @@ export interface Product {
   description: string | null;
   price: number | null;
   imageUrl: string | null;
+  imagePublicId: string | null;
   bpom: string | null;
   size: string | null;
   halal: boolean | null;

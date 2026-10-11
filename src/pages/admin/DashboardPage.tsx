@@ -5,11 +5,11 @@ import { StatsCard } from '../../components/admin/StatsCard';
 import { StatsCardSkeleton } from '../../components/admin/StatsCardSkeleton';
 import { ProductTable } from '../../components/admin/ProductTable';
 import { AdminSearchBar } from '../../components/admin/AdminSearchBar';
+import { ProductFormModal } from '../../components/admin/ProductFormModal';
 import { useAdminStats } from '../../hooks/useAdminStats';
 import { useAdminProducts } from '../../hooks/useAdminProducts';
 import { useDebounce } from '../../hooks/useDebounce';
 import { getUser } from '../../lib/auth';
-import toast from 'react-hot-toast';
 import type { Product } from '../../lib/api';
 
 const getGreeting = (): string => {
@@ -51,26 +51,35 @@ export const DashboardPage: React.FC = () => {
     search: debouncedSearch || undefined,
   });
 
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+
   // Reset page saat search berubah
   React.useEffect(() => {
     setPage(1);
   }, [debouncedSearch]);
 
-  // Placeholder handlers (dibangun di B4.3c-3 dan B4.3c-4)
-  const handleEdit = (product: Product) => {
-    toast(`Edit: ${product.name} (coming soon)`);
-  };
-
-  const handleDelete = (product: Product) => {
-    toast(`Delete: ${product.name} (coming soon)`);
-  };
-
-  const handleRestore = (product: Product) => {
-    toast(`Restore: ${product.name} (coming soon)`);
-  };
-
+  // Handlers
   const handleAddProduct = () => {
-    toast('Tambah produk (coming soon)');
+    setEditingProduct(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (product: Product) => {
+    setEditingProduct(product);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setEditingProduct(null);
+  };
+
+  const handleModalSuccess = () => {
+    // Auto-refresh table + stats setelah CRUD
+    refetchProducts();
+    refetchStats();
   };
 
   return (
@@ -144,7 +153,6 @@ export const DashboardPage: React.FC = () => {
 
       {/* Product Table Section */}
       <section className="mt-10">
-        {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h2 className="font-heading text-xl md:text-2xl font-bold text-dervora-primary">
@@ -165,7 +173,6 @@ export const DashboardPage: React.FC = () => {
           </button>
         </div>
 
-        {/* Search Bar */}
         <div className="mb-6">
           <AdminSearchBar
             value={search}
@@ -174,7 +181,6 @@ export const DashboardPage: React.FC = () => {
           />
         </div>
 
-        {/* Table */}
         <ProductTable
           products={products}
           loading={productsLoading}
@@ -183,11 +189,19 @@ export const DashboardPage: React.FC = () => {
           totalPages={meta?.totalPages || 1}
           onPageChange={setPage}
           onEdit={handleEdit}
-          onDelete={handleDelete}
-          onRestore={handleRestore}
+          onDelete={(p) => console.log('Delete:', p)} // Akan dibangun di B4.3c-4
+          onRestore={(p) => console.log('Restore:', p)} // Akan dibangun di B4.3c-4
           onRetry={refetchProducts}
         />
       </section>
+
+      {/* Product Form Modal */}
+      <ProductFormModal
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        onSuccess={handleModalSuccess}
+        editProduct={editingProduct}
+      />
     </AdminLayout>
   );
 };
