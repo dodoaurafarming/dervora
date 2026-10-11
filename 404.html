@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dervora — Redirecting...</title>
+  <script>
+    // Redirect dari /dervora/products/p1 ke /dervora/#/products/p1
+    (function() {
+      var path = window.location.pathname;
+      var base = '/dervora/';
+      
+      // Hapus base dari path
+      if (path.startsWith(base)) {
+        path = path.slice(base.length);
+      }
+      
+      // Redirect ke index.html dengan hash
+      var redirectUrl = base + '#/' + path;
+      window.location.replace(redirectUrl);
+    })();
+  </script>
+</head>
+<body>
+  <p>Redirecting...</p>
+</body>
+</html>
