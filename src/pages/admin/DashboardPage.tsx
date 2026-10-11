@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
 import { Package, Tag, Folder, FlaskConical, RefreshCw, Plus } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { AdminLayout } from '../../components/admin/AdminLayout';
 import { StatsCard } from '../../components/admin/StatsCard';
 import { StatsCardSkeleton } from '../../components/admin/StatsCardSkeleton';
 import { ProductTable } from '../../components/admin/ProductTable';
 import { AdminSearchBar } from '../../components/admin/AdminSearchBar';
 import { ProductFormModal } from '../../components/admin/ProductFormModal';
+import { ConfirmDialog } from '../../components/admin/ConfirmDialog';
 import { useAdminStats } from '../../hooks/useAdminStats';
 import { useAdminProducts } from '../../hooks/useAdminProducts';
 import { useDebounce } from '../../hooks/useDebounce';
 import { getUser } from '../../lib/auth';
-import type { Product } from '../../lib/api';
+import {
+  isApiSuccess,
+  adminDeleteProduct,
+  adminRestoreProduct,
+  type Product,
+} from '../../lib/api';
 
 const getGreeting = (): string => {
   const hour = new Date().getHours();
@@ -55,12 +62,21 @@ export const DashboardPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
+  // Confirm dialog state
+  const [confirmDialog, setConfirmDialog] = useState<{
+    isOpen: boolean;
+    type: 'delete' | 'restore' | null;
+    product: Product | null;
+  }>({ isOpen: false, type: null, product: null });
+
+  const [confirmLoading, setConfirmLoading] = useState(false);
+
   // Reset page saat search berubah
   React.useEffect(() => {
     setPage(1);
   }, [debouncedSearch]);
 
-  // Handlers
+  // ==================== HANDLERS ====================
   const handleAddProduct = () => {
     setEditingProduct(null);
     setIsModalOpen(true);
@@ -77,9 +93,56 @@ export const DashboardPage: React.FC = () => {
   };
 
   const handleModalSuccess = () => {
-    // Auto-refresh table + stats setelah CRUD
     refetchProducts();
     refetchStats();
+  };
+
+  const handleDeleteClick = (product: Product) => {
+    setConfirmDialog({ isOpen: true, type: 'delete', product });
+  };
+
+  const handleRestoreClick = (product: Product) => {
+    setConfirmDialog({ isOpen: true, type: 'restore', product });
+  };
+
+  const handleConfirmClose = () => {
+    if (confirmLoading) return;
+    setConfirmDialog({ isOpen: false, type: null, product: null });
+  };
+
+  const handleConfirmAction = async () => {
+    const { type, product } = confirmDialog;
+    if (!type || !product) return;
+
+    setConfirmLoading(true);
+
+    if (type === 'delete') {
+      const toastId = toast.loading('Menghapus produk...');
+      const response = await adminDeleteProduct(product.id);
+
+      if (isApiSuccess(response)) {
+        toast.success('Produk berhasil dihapus!', { id: toastId });
+        refetchProducts();
+        refetchStats();
+        setConfirmDialog({ isOpen: false, type: null, product: null });
+      } else {
+        toast.error(`Gagal: ${response.error.message}`, { id: toastId });
+      }
+    } else {
+      const toastId = toast.loading('Mengembalikan produk...');
+      const response = await adminRestoreProduct(product.id);
+
+      if (isApiSuccess(response)) {
+        toast.success('Produk berhasil dikembalikan!', { id: toastId });
+        refetchProducts();
+        refetchStats();
+        setConfirmDialog({ isOpen: false, type: null, product: null });
+      } else {
+        toast.error(`Gagal: ${response.error.message}`, { id: toastId });
+      }
+    }
+
+    setConfirmLoading(false);
   };
 
   return (
@@ -189,8 +252,8 @@ export const DashboardPage: React.FC = () => {
           totalPages={meta?.totalPages || 1}
           onPageChange={setPage}
           onEdit={handleEdit}
-          onDelete={(p) => console.log('Delete:', p)} // Akan dibangun di B4.3c-4
-          onRestore={(p) => console.log('Restore:', p)} // Akan dibangun di B4.3c-4
+          onDelete={handleDeleteClick}
+          onRestore={handleRestoreClick}
           onRetry={refetchProducts}
         />
       </section>
@@ -201,6 +264,23 @@ export const DashboardPage: React.FC = () => {
         onClose={handleModalClose}
         onSuccess={handleModalSuccess}
         editProduct={editingProduct}
+      />
+
+      {/* Confirm Dialog (Delete + Restore) */}
+      <ConfirmDialog
+        isOpen={confirmDialog.isOpen}
+        onClose={handleConfirmClose}
+        onConfirm={handleConfirmAction}
+        loading={confirmLoading}
+        variant={confirmDialog.type === 'delete' ? 'danger' : 'info'}
+        title={confirmDialog.type === 'delete' ? 'Hapus Produk?' : 'Kembalikan Produk?'}
+        message={
+          confirmDialog.type === 'delete'
+            ? `Yakin ingin menghapus "${confirmDialog.product?.name}"? Produk akan di-soft-delete dan bisa di-restore nanti.`
+            : `Kembalikan produk "${confirmDialog.product?.name}" ke daftar aktif?`
+        }
+        confirmText={confirmDialog.type === 'delete' ? 'Ya, Hapus' : 'Ya, Kembalikan'}
+        cancelText="Batal"
       />
     </AdminLayout>
   );
