@@ -92,6 +92,18 @@ export interface Product {
 }
 
 // ==================== HELPER ====================
+async function authFetch<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
+  const token = localStorage.getItem('dervora_admin_token');
+
+  return request<T>(endpoint, {
+    ...options,
+    headers: {
+      ...options?.headers,
+      ...(token && { Authorization: `Bearer ${token}` }),
+    },
+  });
+}
+
 async function request<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
   try {
     const res = await fetch(`${API_URL}${endpoint}`, {
@@ -168,9 +180,87 @@ export interface AdminStats {
 }
 
 export async function getAdminStats(): Promise<ApiResponse<AdminStats>> {
-  return request<AdminStats>('/api/admin/stats', {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem('dervora_admin_token') || ''}`,
-    },
+  return authFetch<AdminStats>('/api/admin/stats');
+}
+
+// ==================== ADMIN PRODUCTS API ====================
+export async function adminListProducts(params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+  includeDeleted?: boolean;
+}): Promise<ApiResponse<Product[]>> {
+  const query = new URLSearchParams();
+  if (params?.page) query.set('page', String(params.page));
+  if (params?.limit) query.set('limit', String(params.limit));
+  if (params?.search) query.set('search', params.search);
+  if (params?.includeDeleted) query.set('includeDeleted', 'true');
+
+  const qs = query.toString();
+  return authFetch<Product[]>(`/api/admin/products${qs ? `?${qs}` : ''}`);
+}
+
+export async function adminGetProduct(id: number): Promise<ApiResponse<Product>> {
+  return authFetch<Product>(`/api/admin/products/${id}`);
+}
+
+export async function adminCreateProduct(
+  data: Partial<Product> & { ingredientIds?: number[] }
+): Promise<ApiResponse<Product>> {
+  return authFetch<Product>('/api/products', {
+    method: 'POST',
+    body: JSON.stringify(data),
   });
+}
+
+export async function adminUpdateProduct(
+  id: number,
+  data: Partial<Product> & { ingredientIds?: number[] }
+): Promise<ApiResponse<Product>> {
+  return authFetch<Product>(`/api/products/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function adminDeleteProduct(id: number): Promise<ApiResponse<{ id: number; deleted: boolean }>> {
+  return authFetch<{ id: number; deleted: boolean }>(`/api/products/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function adminRestoreProduct(id: number): Promise<ApiResponse<Product>> {
+  return authFetch<Product>(`/api/admin/products/${id}/restore`, {
+    method: 'POST',
+  });
+}
+
+// ==================== ADMIN UPLOAD API ====================
+export async function adminUploadImage(
+  file: File
+): Promise<ApiResponse<{ url: string; publicId: string }>> {
+  const token = localStorage.getItem('dervora_admin_token');
+  const formData = new FormData();
+  formData.append('image', file);
+
+  try {
+    const res = await fetch(`${API_URL}/api/admin/upload`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+    const json = await res.json();
+    return json as ApiResponse<{ url: string; publicId: string }>;
+  } catch (error) {
+    return {
+      success: false,
+      error: {
+        code: 'NETWORK_ERROR',
+        message: error instanceof Error ? error.message : 'Upload failed',
+        details: null,
+      },
+    };
+  }
 }
