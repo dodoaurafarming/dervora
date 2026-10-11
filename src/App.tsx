@@ -6,6 +6,8 @@ import { Footer } from './components/layout/Footer';
 import { HomePage } from './pages/home/HomePage';
 import { ProductsPage } from './pages/products/ProductsPage';
 import { ProductDetailPage } from './pages/product-detail/ProductDetailPage';
+import { LoginPage } from './pages/admin/LoginPage';
+import { AdminProtectedRoute } from './components/admin/AdminProtectedRoute';
 
 // Halaman dummy untuk testing
 const IngredientsPage = () => <div className="p-4"><h1 className="text-2xl font-bold text-dervora-primary">Ingredients Page</h1></div>;
@@ -17,7 +19,7 @@ export const App: React.FC = () => {
     <Router>
       <div className="min-h-screen bg-white flex flex-col">
         <Navbar />
-        
+
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<HomePage />} />
@@ -26,7 +28,26 @@ export const App: React.FC = () => {
             <Route path="/ingredients" element={<IngredientsPage />} />
             <Route path="/my-routine" element={<RoutinePage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            {/* Fallback: redirect ke Home kalau route tidak dikenal */}
+
+            {/* Admin Routes (Hidden) */}
+            <Route path="/dervora-control-9k2x/login" element={<LoginPage />} />
+            <Route
+              path="/dervora-control-9k2x/dashboard"
+              element={
+                <AdminProtectedRoute>
+                  <div className="p-8">
+                    <h1 className="font-heading text-3xl font-bold text-dervora-primary">
+                      Dashboard - Coming Soon
+                    </h1>
+                    <p className="font-body text-dervora-dark/70 mt-2">
+                      Tabel produk akan dibangun di Sprint B4.3.
+                    </p>
+                  </div>
+                </AdminProtectedRoute>
+              }
+            />
+
+            {/* Fallback */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
