@@ -157,3 +157,20 @@ export async function getCategories(): Promise<ApiResponse<Category[]>> {
 export async function getIngredients(): Promise<ApiResponse<Ingredient[]>> {
   return request<Ingredient[]>('/api/ingredients');
 }
+
+// ==================== ADMIN API ====================
+export interface AdminStats {
+  totalProducts: number;
+  totalBrands: number;
+  totalCategories: number;
+  totalIngredients: number;
+  deletedProducts: number;
+}
+
+export async function getAdminStats(): Promise<ApiResponse<AdminStats>> {
+  return request<AdminStats>('/api/admin/stats', {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem('dervora_admin_token') || ''}`,
+    },
+  });
+}
