@@ -10,6 +10,7 @@ import { IngredientsPage } from './pages/ingredients/IngredientsPage';
 import { IngredientDetailPage } from './pages/ingredient-detail/IngredientDetailPage';
 import { LoginPage } from './pages/admin/LoginPage';
 import { DashboardPage } from './pages/admin/DashboardPage';
+import { RoutinePage } from './pages/my-routine/RoutinePage';
 import { AdminProtectedRoute } from './components/admin/AdminProtectedRoute';
 
 // ==================== PUBLIC LAYOUT ====================
@@ -27,11 +28,6 @@ const PublicLayout: React.FC = () => {
 };
 
 // ==================== DUMMY PAGES ====================
-const RoutinePage = () => (
-  <div className="p-4">
-    <h1 className="text-2xl font-bold text-dervora-primary">My Routine Page</h1>
-  </div>
-);
 const ProfilePage = () => (
   <div className="p-4">
     <h1 className="text-2xl font-bold text-dervora-primary">Profile Page</h1>
