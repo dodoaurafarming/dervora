@@ -13,6 +13,7 @@ import { DashboardPage } from './pages/admin/DashboardPage';
 import { RoutinePage } from './pages/my-routine/RoutinePage';
 import { QuizPage } from './pages/quiz/QuizPage';
 import { SkinProfilePage } from './pages/skin-profile/SkinProfilePage';
+import { ProductMatchesPage } from './pages/product-matches/ProductMatchesPage';
 import { AdminProtectedRoute } from './components/admin/AdminProtectedRoute';
 
 // ==================== PUBLIC LAYOUT ====================
@@ -50,6 +51,7 @@ export const App: React.FC = () => {
           <Route path="/my-routine" element={<RoutinePage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/skin-profile" element={<SkinProfilePage />} />
+          <Route path="/matches" element={<ProductMatchesPage />} />
           <Route path="/quiz" element={<QuizPage />} />
         </Route>
 

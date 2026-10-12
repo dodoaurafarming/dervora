@@ -1,28 +1,55 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Search } from 'lucide-react';
 import { useProducts } from '../../hooks/useProducts';
 import { getCategories, type Category } from '../../lib/api';
 import { ProductCard } from '../../components/product/ProductCard';
 import { ProductCardSkeleton } from '../../components/ui/ProductCardSkeleton';
+import { SortDropdown, type SortOption } from '../../components/product/SortDropdown';
 import { FadeIn } from '../../components/ui/FadeIn';
 
 export const ProductsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [sortBy, setSortBy] = useState<SortOption>('popular');
 
+  // Fetch categories sekali
   useEffect(() => {
     getCategories().then((res) => {
       if (res.success) setCategories(res.data);
     });
   }, []);
 
+  // Fetch products dengan filter
   const { products, loading, error } = useProducts({
     page: 1,
     limit: 50,
     search: searchQuery || undefined,
     categoryId: selectedCategoryId || undefined,
   });
+
+  // Sort products di client-side
+  const sortedProducts = useMemo(() => {
+    if (!products.length) return products;
+
+    const sorted = [...products].sort((a, b) => {
+      if (sortBy === 'popular') {
+        return (b.reviewCount || 0) - (a.reviewCount || 0);
+      }
+      if (sortBy === 'rating-high') {
+        return (b.rating || 0) - (a.rating || 0);
+      }
+      if (sortBy === 'price-low') {
+        return (a.price || 0) - (b.price || 0);
+      }
+      if (sortBy === 'price-high') {
+        return (b.price || 0) - (a.price || 0);
+      }
+      return 0;
+    });
+
+    return sorted;
+  }, [products, sortBy]);
 
   return (
     <section className="w-full bg-dervora-cream pt-6 md:pt-8 pb-12 md:pb-16 px-6 md:px-12 lg:px-20">
@@ -38,8 +65,8 @@ export const ProductsPage: React.FC = () => {
           </p>
         </header>
 
-        {/* Search */}
-        <div className="relative mt-6 md:mt-8">
+        {/* Search Bar */}
+        <div className="relative mt-6 md:mt-8 mb-6">
           <Search
             className="absolute left-4 top-1/2 -translate-y-1/2 text-dervora-dark/40"
             size={20}
@@ -53,36 +80,44 @@ export const ProductsPage: React.FC = () => {
           />
         </div>
 
-        {/* Category Filter */}
-        <div className="flex gap-2 mt-4 overflow-x-auto pb-2 -mx-6 px-6 md:mx-0 md:px-0">
-          <button
-            onClick={() => setSelectedCategoryId(null)}
-            className={`px-4 py-2 rounded-full whitespace-nowrap font-body text-sm transition-colors ${
-              selectedCategoryId === null
-                ? 'bg-dervora-primary text-dervora-cream'
-                : 'bg-white text-dervora-dark border border-dervora-beige hover:border-dervora-primary'
-            }`}
-          >
-            Semua
-          </button>
-          {categories.map((cat) => (
+        {/* Filter + Sort Row */}
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
+          {/* Category Filter — scroll horizontal tanpa scrollbar di mobile, wrap di desktop */}
+          <div className="flex md:flex-wrap gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-6 px-6 md:mx-0 md:px-0 md:overflow-visible flex-1">
             <button
-              key={cat.id}
-              onClick={() => setSelectedCategoryId(cat.id)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap font-body text-sm transition-colors ${
-                selectedCategoryId === cat.id
+              onClick={() => setSelectedCategoryId(null)}
+              className={`px-4 py-2 rounded-full whitespace-nowrap font-body text-sm transition-colors flex-shrink-0 ${
+                selectedCategoryId === null
                   ? 'bg-dervora-primary text-dervora-cream'
                   : 'bg-white text-dervora-dark border border-dervora-beige hover:border-dervora-primary'
               }`}
             >
-              {cat.name}
+              Semua
             </button>
-          ))}
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setSelectedCategoryId(cat.id)}
+                className={`px-4 py-2 rounded-full whitespace-nowrap font-body text-sm transition-colors flex-shrink-0 ${
+                  selectedCategoryId === cat.id
+                    ? 'bg-dervora-primary text-dervora-cream'
+                    : 'bg-white text-dervora-dark border border-dervora-beige hover:border-dervora-primary'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+
+          {/* Sort Dropdown */}
+          <div className="flex-shrink-0">
+            <SortDropdown value={sortBy} onChange={setSortBy} />
+          </div>
         </div>
 
         {/* Product Count */}
-        <p className="font-body text-sm text-dervora-dark/60 mt-6 mb-4">
-          Menampilkan {products.length} produk
+        <p className="font-body text-sm text-dervora-dark/60 mb-4">
+          Menampilkan {sortedProducts.length} produk
         </p>
 
         {/* Loading State */}
@@ -110,7 +145,7 @@ export const ProductsPage: React.FC = () => {
         )}
 
         {/* Empty State */}
-        {!loading && !error && products.length === 0 && (
+        {!loading && !error && sortedProducts.length === 0 && (
           <div className="text-center py-16">
             <p className="font-heading italic text-xl text-dervora-dark/60">
               Tidak ada produk yang cocok dengan pencarianmu.
@@ -119,9 +154,9 @@ export const ProductsPage: React.FC = () => {
         )}
 
         {/* Product Grid */}
-        {!loading && !error && products.length > 0 && (
+        {!loading && !error && sortedProducts.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
-            {products.map((product, index) => (
+            {sortedProducts.map((product, index) => (
               <FadeIn key={product.id} delay={index * 0.05}>
                 <ProductCard product={product} variant="catalog" />
               </FadeIn>
