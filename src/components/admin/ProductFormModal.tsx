@@ -328,12 +328,12 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 />
               </FormField>
 
-              <FormField label="Review Count" error={errors.reviewCount}>
+              <FormField label="Terjual" error={errors.reviewCount}>
                 <input
                   type="number"
                   value={formData.reviewCount}
                   onChange={(e) => updateField('reviewCount', e.target.value)}
-                  placeholder="124"
+                  placeholder="Contoh: 100"
                   className="w-full px-4 py-2.5 rounded-xl border border-dervora-beige bg-white focus:outline-none focus:ring-2 focus:ring-dervora-primary/50 font-body text-sm"
                 />
               </FormField>
