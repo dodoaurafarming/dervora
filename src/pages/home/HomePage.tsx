@@ -35,12 +35,16 @@ export const HomePage: React.FC = () => {
             </p>
 
             <div className="flex flex-col md:flex-row gap-3 md:gap-4 mt-6 md:mt-8">
-              <Button variant="primary" size="lg" className="whitespace-nowrap px-6">
-                ✦ Start Skin Quiz
-              </Button>
-              <Button variant="outline" size="lg" className="whitespace-nowrap px-6">
-                Explore Products
-              </Button>
+              <Link to="/quiz">
+                <Button variant="primary" size="lg" className="whitespace-nowrap px-6">
+                  ✦ Start Skin Quiz
+                </Button>
+              </Link>
+              <Link to="/products">
+                <Button variant="outline" size="lg" className="whitespace-nowrap px-6">
+                  Explore Products
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -114,9 +118,11 @@ export const HomePage: React.FC = () => {
             </p>
 
             <div className="mt-8 md:mt-10">
-              <Button variant="primary" size="lg" className="whitespace-nowrap px-8">
-                Take the Quiz
-              </Button>
+              <Link to="/quiz">
+                <Button variant="primary" size="lg" className="whitespace-nowrap px-8">
+                  Take the Quiz
+                </Button>
+              </Link>
             </div>
           </FadeIn>
         </div>

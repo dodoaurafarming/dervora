@@ -11,6 +11,8 @@ import { IngredientDetailPage } from './pages/ingredient-detail/IngredientDetail
 import { LoginPage } from './pages/admin/LoginPage';
 import { DashboardPage } from './pages/admin/DashboardPage';
 import { RoutinePage } from './pages/my-routine/RoutinePage';
+import { QuizPage } from './pages/quiz/QuizPage';
+import { SkinProfilePage } from './pages/skin-profile/SkinProfilePage';
 import { AdminProtectedRoute } from './components/admin/AdminProtectedRoute';
 
 // ==================== PUBLIC LAYOUT ====================
@@ -47,6 +49,8 @@ export const App: React.FC = () => {
           <Route path="/ingredients/:id" element={<IngredientDetailPage />} />
           <Route path="/my-routine" element={<RoutinePage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/skin-profile" element={<SkinProfilePage />} />
+          <Route path="/quiz" element={<QuizPage />} />
         </Route>
 
         {/* ==================== ADMIN ROUTES ==================== */}
