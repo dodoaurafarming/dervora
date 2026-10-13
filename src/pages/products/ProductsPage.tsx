@@ -5,6 +5,7 @@ import { getCategories, type Category } from '../../lib/api';
 import { ProductCard } from '../../components/product/ProductCard';
 import { ProductCardSkeleton } from '../../components/ui/ProductCardSkeleton';
 import { SortDropdown, type SortOption } from '../../components/product/SortDropdown';
+import { CategoryFilter } from '../../components/product/CategoryFilter';
 import { FadeIn } from '../../components/ui/FadeIn';
 
 export const ProductsPage: React.FC = () => {
@@ -82,31 +83,13 @@ export const ProductsPage: React.FC = () => {
 
         {/* Filter + Sort Row */}
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
-          {/* Category Filter — scroll horizontal tanpa scrollbar di mobile, wrap di desktop */}
-          <div className="flex md:flex-wrap gap-2 overflow-x-auto scrollbar-hide pb-1 -mx-6 px-6 md:mx-0 md:px-0 md:overflow-visible flex-1">
-            <button
-              onClick={() => setSelectedCategoryId(null)}
-              className={`px-4 py-2 rounded-full whitespace-nowrap font-body text-sm transition-colors flex-shrink-0 ${
-                selectedCategoryId === null
-                  ? 'bg-dervora-primary text-dervora-cream'
-                  : 'bg-white text-dervora-dark border border-dervora-beige hover:border-dervora-primary'
-              }`}
-            >
-              Semua
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setSelectedCategoryId(cat.id)}
-                className={`px-4 py-2 rounded-full whitespace-nowrap font-body text-sm transition-colors flex-shrink-0 ${
-                  selectedCategoryId === cat.id
-                    ? 'bg-dervora-primary text-dervora-cream'
-                    : 'bg-white text-dervora-dark border border-dervora-beige hover:border-dervora-primary'
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
+          {/* Category Filter yang bersih */}
+          <div className="flex-1">
+            <CategoryFilter
+              categories={categories}
+              selectedId={selectedCategoryId}
+              onChange={setSelectedCategoryId}
+            />
           </div>
 
           {/* Sort Dropdown */}
