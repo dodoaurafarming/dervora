@@ -8,6 +8,7 @@ interface ModalProps {
   children: React.ReactNode;
   footer?: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  zIndex?: number;
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -17,6 +18,7 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   footer,
   size = 'lg',
+  zIndex = 100,
 }) => {
   // Close on ESC key
   useEffect(() => {
@@ -50,7 +52,8 @@ export const Modal: React.FC<ModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6"
+      className="fixed inset-0 flex items-center justify-center p-4 sm:p-6"
+      style={{ zIndex }}
       aria-modal="true"
       role="dialog"
     >
@@ -79,9 +82,7 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5">
-          {children}
-        </div>
+        <div className="flex-1 overflow-y-auto px-6 py-5">{children}</div>
 
         {/* Footer */}
         {footer && (

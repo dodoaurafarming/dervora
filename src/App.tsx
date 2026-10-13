@@ -14,6 +14,7 @@ import { RoutinePage } from './pages/my-routine/RoutinePage';
 import { QuizPage } from './pages/quiz/QuizPage';
 import { SkinProfilePage } from './pages/skin-profile/SkinProfilePage';
 import { ProductMatchesPage } from './pages/product-matches/ProductMatchesPage';
+import { AdminIngredientsPage } from './pages/admin/AdminIngredientsPage';
 import { AdminProtectedRoute } from './components/admin/AdminProtectedRoute';
 
 // ==================== PUBLIC LAYOUT ====================
@@ -65,6 +66,14 @@ export const App: React.FC = () => {
             </AdminProtectedRoute>
           }
         />
+        <Route
+        path="/dervora-control-9k2x/ingredients"
+        element={
+          <AdminProtectedRoute>
+            <AdminIngredientsPage />
+          </AdminProtectedRoute>
+        }
+/>
 
         {/* ==================== FALLBACK ==================== */}
         <Route path="*" element={<Navigate to="/" replace />} />

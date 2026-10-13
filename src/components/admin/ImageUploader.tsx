@@ -2,17 +2,22 @@ import React, { useState, useRef } from 'react';
 import { Upload, X, Loader2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { adminUploadImage, isApiSuccess } from '../../lib/api';
+import type { ApiResponse } from '../../lib/api';
 
 interface ImageUploaderProps {
   imageUrl: string | null;
   imagePublicId: string | null;
   onChange: (url: string | null, publicId: string | null) => void;
+  uploadFunction?: (
+    file: File
+  ) => Promise<ApiResponse<{ url: string; publicId: string }>>;
 }
 
 export const ImageUploader: React.FC<ImageUploaderProps> = ({
   imageUrl,
   imagePublicId,
   onChange,
+  uploadFunction,
 }) => {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -36,9 +41,10 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
     setUploading(true);
     const toastId = toast.loading('Mengupload gambar...');
 
-    const response = await adminUploadImage(file);
+    const uploadFn = uploadFunction || adminUploadImage;
+    const response = await uploadFn(file);
 
-    if (isApiSuccess(response)) {
+    if (isApiSuccess<{ url: string; publicId: string }>(response)) {
       onChange(response.data.url, response.data.publicId);
       toast.success('Gambar berhasil diupload!', { id: toastId });
     } else {
@@ -57,7 +63,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   return (
     <div>
       <label className="block font-body text-sm font-medium text-dervora-dark mb-2">
-        Gambar Produk
+        Gambar
       </label>
 
       {imageUrl ? (
@@ -65,7 +71,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         <div className="relative w-full max-w-xs">
           <img
             src={imageUrl}
-            alt="Product preview"
+            alt="Preview"
             className="w-full aspect-square object-cover rounded-2xl border-2 border-dervora-beige"
           />
           <button

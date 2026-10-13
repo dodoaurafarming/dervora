@@ -21,22 +21,40 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
       {/* Admin Header */}
       <header className="sticky top-0 z-50 bg-white border-b border-dervora-beige shadow-sm">
         <div className="max-w-7xl mx-auto px-6 md:px-8 py-4 flex items-center justify-between">
-          {/* Kiri: Logo */}
-          <Link to="/dervora-control-9k2x/dashboard" className="flex items-center gap-3">
-            <img
-              src={getImageUrl('images/logo-icon.png')}
-              alt="Dervora"
-              className="w-10 h-10 object-contain"
-            />
-            <div>
-              <span className="font-heading text-2xl font-bold text-dervora-primary block leading-none">
-                Dervora
-              </span>
-              <span className="font-body text-[10px] text-dervora-dark/50 uppercase tracking-widest">
-                Admin Panel
-              </span>
-            </div>
-          </Link>
+          {/* Kiri: Logo + Nav */}
+          <div className="flex items-center gap-6">
+            <Link to="/dervora-control-9k2x/dashboard" className="flex items-center gap-3">
+              <img
+                src={getImageUrl('images/logo-icon.png')}
+                alt="Dervora"
+                className="w-10 h-10 object-contain"
+              />
+              <div>
+                <span className="font-heading text-2xl font-bold text-dervora-primary block leading-none">
+                  Dervora
+                </span>
+                <span className="font-body text-[10px] text-dervora-dark/50 uppercase tracking-widest">
+                  Admin Panel
+                </span>
+              </div>
+            </Link>
+
+            {/* Nav Links */}
+            <nav className="hidden md:flex items-center gap-6 ml-4">
+              <Link
+                to="/dervora-control-9k2x/dashboard"
+                className="font-body text-sm text-dervora-dark/70 hover:text-dervora-primary transition-colors"
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/dervora-control-9k2x/ingredients"
+                className="font-body text-sm text-dervora-dark/70 hover:text-dervora-primary transition-colors"
+              >
+                Ingredients
+              </Link>
+            </nav>
+          </div>
 
           {/* Kanan: Logout */}
           <button
@@ -56,7 +74,7 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
         </div>
       </main>
 
-      {/* Simple Footer */}
+      {/* Footer */}
       <footer className="bg-white border-t border-dervora-beige py-4">
         <div className="max-w-7xl mx-auto px-6 md:px-8 text-center">
           <p className="font-body text-xs text-dervora-dark/50">

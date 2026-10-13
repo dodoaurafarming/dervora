@@ -57,6 +57,7 @@ export interface Ingredient {
   suitableSkin: string[] | null;
   concerns: string[] | null;
   photoUrl: string | null;
+  photoPublicId: string | null;  // ← PASTIKAN INI ADA
   sourceLink: string | null;
 }
 
@@ -161,9 +162,33 @@ export async function getBrands(params?: {
   return request<Brand[]>(`/api/brands${qs ? `?${qs}` : ''}`);
 }
 
+// ==================== ADMIN BRANDS API ====================
+export async function adminCreateBrand(data: {
+  name: string;
+  country?: string;
+  website?: string;
+}): Promise<ApiResponse<Brand>> {
+  return authFetch<Brand>('/api/brands', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+
 // ==================== CATEGORIES API ====================
 export async function getCategories(): Promise<ApiResponse<Category[]>> {
   return request<Category[]>('/api/categories');
+}
+
+export async function adminCreateCategory(data: {
+  name: string;
+  description?: string;
+  iconUrl?: string;
+}): Promise<ApiResponse<Category>> {
+  return authFetch<Category>('/api/categories', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
 }
 
 // ==================== INGREDIENTS API ====================
@@ -246,6 +271,86 @@ export async function adminUploadImage(
 
   try {
     const res = await fetch(`${API_URL}/api/admin/upload`, {
+      method: 'POST',
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+      body: formData,
+    });
+    const json = await res.json();
+    return json as ApiResponse<{ url: string; publicId: string }>;
+  } catch (error) {
+    return {
+      success: false,
+      error: {
+        code: 'NETWORK_ERROR',
+        message: error instanceof Error ? error.message : 'Upload failed',
+        details: null,
+      },
+    };
+  }
+}
+
+// ==================== ADMIN INGREDIENTS API ====================
+export interface AdminIngredient extends Ingredient {
+  _count?: {
+    products: number;
+  };
+}
+
+export async function adminListIngredients(params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}): Promise<ApiResponse<AdminIngredient[]>> {
+  const query = new URLSearchParams();
+  if (params?.page) query.set('page', String(params.page));
+  if (params?.limit) query.set('limit', String(params.limit));
+  if (params?.search) query.set('search', params.search);
+  const qs = query.toString();
+  return authFetch<AdminIngredient[]>(`/api/admin/ingredients${qs ? `?${qs}` : ''}`);
+}
+
+export async function adminGetIngredient(id: number): Promise<ApiResponse<AdminIngredient>> {
+  return authFetch<AdminIngredient>(`/api/admin/ingredients/${id}`);
+}
+
+export async function adminCreateIngredient(
+  data: Partial<AdminIngredient>
+): Promise<ApiResponse<AdminIngredient>> {
+  return authFetch<AdminIngredient>('/api/admin/ingredients', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function adminUpdateIngredient(
+  id: number,
+  data: Partial<AdminIngredient>
+): Promise<ApiResponse<AdminIngredient>> {
+  return authFetch<AdminIngredient>(`/api/admin/ingredients/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function adminDeleteIngredient(
+  id: number
+): Promise<ApiResponse<{ id: number; deleted: boolean }>> {
+  return authFetch<{ id: number; deleted: boolean }>(`/api/admin/ingredients/${id}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function adminUploadIngredientImage(
+  file: File
+): Promise<ApiResponse<{ url: string; publicId: string }>> {
+  const token = localStorage.getItem('dervora_admin_token');
+  const formData = new FormData();
+  formData.append('image', file);
+
+  try {
+    const res = await fetch(`${API_URL}/api/admin/upload/ingredient`, {
       method: 'POST',
       headers: {
         ...(token && { Authorization: `Bearer ${token}` }),
