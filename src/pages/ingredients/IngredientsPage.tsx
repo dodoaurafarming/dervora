@@ -1,25 +1,39 @@
-import React, { useState, useMemo } from 'react';
-import { Search, Sparkles } from 'lucide-react';
-import { useIngredients } from '../../hooks/useIngredients';
+import React, { useState } from 'react';
+import { Search, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useIngredientCatalog } from '../../hooks/useIngredients';
 import { IngredientCard } from '../../components/ingredient/IngredientCard';
 import { IngredientCardSkeleton } from '../../components/ingredient/IngredientCardSkeleton';
 import { FadeIn } from '../../components/ui/FadeIn';
-import { useDebounce } from '../../hooks/useDebounce';
+
+const ITEMS_PER_PAGE = 20;
 
 export const IngredientsPage: React.FC = () => {
-  const { ingredients, loading, error, refetch } = useIngredients();
-  const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search, 300);
+  const {
+    catalog,
+    totalCount,
+    categories,
+    loading,
+    error,
+    searchQuery,
+    setSearchQuery,
+    categoryFilter,
+    setCategoryFilter,
+    refetch,
+  } = useIngredientCatalog();
 
-  const filteredIngredients = useMemo(() => {
-    if (!debouncedSearch) return ingredients;
-    const q = debouncedSearch.toLowerCase();
-    return ingredients.filter(
-      (i) =>
-        i.name.toLowerCase().includes(q) ||
-        (i.function && i.function.toLowerCase().includes(q))
-    );
-  }, [ingredients, debouncedSearch]);
+  const [page, setPage] = useState(1);
+
+  // Reset page ke 1 setiap kali search atau filter berubah
+  React.useEffect(() => {
+    setPage(1);
+  }, [searchQuery, categoryFilter]);
+
+  // Pagination logic
+  const totalPages = Math.ceil(catalog.length / ITEMS_PER_PAGE);
+  const paginatedCatalog = catalog.slice(
+    (page - 1) * ITEMS_PER_PAGE,
+    page * ITEMS_PER_PAGE
+  );
 
   return (
     <section className="w-full bg-dervora-cream pt-6 md:pt-8 pb-12 md:pb-16 px-6 md:px-12 lg:px-20">
@@ -37,18 +51,34 @@ export const IngredientsPage: React.FC = () => {
           </p>
         </header>
 
-        <div className="relative mb-8">
-          <Search
-            size={20}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-dervora-dark/40"
-          />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Cari ingredient... (contoh: Niacinamide)"
-            className="w-full pl-12 pr-4 py-3 rounded-full border border-dervora-beige bg-white focus:outline-none focus:ring-2 focus:ring-dervora-primary/50 font-body text-dervora-dark"
-          />
+        {/* Search & Filter */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
+          <div className="relative flex-grow">
+            <Search
+              size={20}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-dervora-dark/40"
+            />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Cari ingredient... (contoh: Niacinamide)"
+              className="w-full pl-12 pr-4 py-3 rounded-full border border-dervora-beige bg-white focus:outline-none focus:ring-2 focus:ring-dervora-primary/50 font-body text-dervora-dark"
+            />
+          </div>
+          
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="px-4 py-3 rounded-full border border-dervora-beige bg-white focus:outline-none focus:ring-2 focus:ring-dervora-primary/50 font-body text-sm text-dervora-dark cursor-pointer min-w-[180px]"
+          >
+            <option value="all">Semua Kategori</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
         </div>
 
         {loading && (
@@ -73,7 +103,7 @@ export const IngredientsPage: React.FC = () => {
           </div>
         )}
 
-        {!loading && !error && filteredIngredients.length === 0 && (
+        {!loading && !error && catalog.length === 0 && (
           <div className="text-center py-16">
             <p className="font-heading italic text-xl text-dervora-dark/60">
               Tidak ada ingredient yang cocok dengan pencarianmu.
@@ -81,18 +111,45 @@ export const IngredientsPage: React.FC = () => {
           </div>
         )}
 
-        {!loading && !error && filteredIngredients.length > 0 && (
+        {!loading && !error && catalog.length > 0 && (
           <>
-            <p className="font-body text-sm text-dervora-dark/60 mb-6">
-              Menampilkan {filteredIngredients.length} ingredient
-            </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5 auto-rows-fr">
-            {filteredIngredients.map((ing, index) => (
-                <FadeIn key={ing.id} delay={index * 0.05} className="h-full">
-                <IngredientCard ingredient={ing} />
-                </FadeIn>
-            ))}
+            <div className="flex items-center justify-between mb-6">
+              <p className="font-body text-sm text-dervora-dark/60">
+                Menampilkan {paginatedCatalog.length} dari {catalog.length} ingredient
+                {totalCount !== catalog.length && ` (dari total ${totalCount})`}
+              </p>
             </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5 auto-rows-fr mb-8">
+              {paginatedCatalog.map((catalogItem, index) => (
+                <FadeIn key={catalogItem.id} delay={index * 0.05} className="h-full">
+                  <IngredientCard ingredient={catalogItem as any} />
+                </FadeIn>
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4 mt-8">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="p-2 rounded-full border border-dervora-beige bg-white hover:bg-dervora-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={20} className="text-dervora-primary" />
+                </button>
+                <span className="font-body text-sm text-dervora-dark">
+                  Halaman {page} dari {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="p-2 rounded-full border border-dervora-beige bg-white hover:bg-dervora-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronRight size={20} className="text-dervora-primary" />
+                </button>
+              </div>
+            )}
           </>
         )}
       </div>

@@ -26,7 +26,6 @@ interface IngredientFormData {
   description: string;
   sourceLink: string;
   photoUrl: string | null;
-  photoPublicId: string | null;
   suitableSkin: string[];
   concerns: string[];
 }
@@ -37,7 +36,6 @@ const EMPTY_FORM: IngredientFormData = {
   description: '',
   sourceLink: '',
   photoUrl: null,
-  photoPublicId: null,
   suitableSkin: [],
   concerns: [],
 };
@@ -89,7 +87,6 @@ export const IngredientFormModal: React.FC<IngredientFormModalProps> = ({
           description: editIngredient.description || '',
           sourceLink: editIngredient.sourceLink || '',
           photoUrl: editIngredient.photoUrl,
-          photoPublicId: editIngredient.photoPublicId,
           suitableSkin: editIngredient.suitableSkin || [],
           concerns: editIngredient.concerns || [],
         });
@@ -151,7 +148,6 @@ export const IngredientFormModal: React.FC<IngredientFormModalProps> = ({
       description: formData.description || undefined,
       sourceLink: formData.sourceLink || undefined,
       photoUrl: formData.photoUrl || undefined,
-      photoPublicId: formData.photoPublicId || undefined,
       suitableSkin:
         formData.suitableSkin.length > 0 ? formData.suitableSkin : undefined,
       concerns: formData.concerns.length > 0 ? formData.concerns : undefined,
@@ -212,10 +208,9 @@ export const IngredientFormModal: React.FC<IngredientFormModalProps> = ({
         {/* Image Uploader */}
         <ImageUploader
           imageUrl={formData.photoUrl}
-          imagePublicId={formData.photoPublicId}
-          onChange={(url, publicId) => {
+          imagePublicId={null} // Foto belum punya public_id di schema baru
+          onChange={(url) => {
             updateField('photoUrl', url);
-            updateField('photoPublicId', publicId);
           }}
           uploadFunction={adminUploadIngredientImage}
         />

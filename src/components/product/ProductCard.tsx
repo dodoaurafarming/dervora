@@ -44,10 +44,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     }
   };
 
+  // FIX: tambahkan optional chaining (?.) agar aman jika ingredients undefined
   const ingredientNames = product.ingredients
-    .map((i) => i.ingredient.name)
-    .slice(0, 2)
-    .join(' • ');
+    ?.map((i) => i.ingredient.name)
+    ?.slice(0, 2)
+    ?.join(' • ') || '';
 
   return (
     <>

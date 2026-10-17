@@ -13,7 +13,8 @@ export const IngredientTableRow: React.FC<IngredientTableRowProps> = ({
   onEdit,
   onDelete,
 }) => {
-  const productCount = ingredient._count?.products || 0;
+  // FIX: _count.products → _count.productIngredients
+  const productCount = ingredient._count?.productIngredients || 0;
 
   return (
     <tr className="border-b border-dervora-beige/50 last:border-0 hover:bg-dervora-cream/30 transition-colors">

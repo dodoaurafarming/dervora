@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useProducts } from '../../hooks/useProducts';
 import { getCategories, type Category } from '../../lib/api';
 import { ProductCard } from '../../components/product/ProductCard';
@@ -10,9 +10,25 @@ import { FadeIn } from '../../components/ui/FadeIn';
 
 export const ProductsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('popular');
+  const [page, setPage] = useState(1);
+
+  // Debounce search agar tidak spam API
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPage(1); // Reset page ke 1 setiap kali search berubah
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Reset page saat filter kategori berubah
+  useEffect(() => {
+    setPage(1);
+  }, [selectedCategoryId]);
 
   // Fetch categories sekali
   useEffect(() => {
@@ -21,15 +37,15 @@ export const ProductsPage: React.FC = () => {
     });
   }, []);
 
-  // Fetch products dengan filter
-  const { products, loading, error } = useProducts({
-    page: 1,
-    limit: 50,
-    search: searchQuery || undefined,
+  // Fetch products dengan filter & pagination
+  const { products, loading, error, meta } = useProducts({
+    page,
+    limit: 20, // Tampilkan 20 per halaman
+    search: debouncedSearch || undefined,
     categoryId: selectedCategoryId || undefined,
   });
 
-  // Sort products di client-side
+  // Sort products di client-side (hanya untuk halaman ini)
   const sortedProducts = useMemo(() => {
     if (!products.length) return products;
 
@@ -51,6 +67,18 @@ export const ProductsPage: React.FC = () => {
 
     return sorted;
   }, [products, sortBy]);
+
+  const totalPages = meta?.totalPages || 1;
+
+  const handlePrevPage = () => {
+    setPage((p) => Math.max(1, p - 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleNextPage = () => {
+    setPage((p) => Math.min(totalPages, p + 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   return (
     <section className="w-full bg-dervora-cream pt-6 md:pt-8 pb-12 md:pb-16 px-6 md:px-12 lg:px-20">
@@ -83,7 +111,7 @@ export const ProductsPage: React.FC = () => {
 
         {/* Filter + Sort Row */}
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
-          {/* Category Filter yang bersih */}
+          {/* Category Filter */}
           <div className="flex-1">
             <CategoryFilter
               categories={categories}
@@ -99,9 +127,12 @@ export const ProductsPage: React.FC = () => {
         </div>
 
         {/* Product Count */}
-        <p className="font-body text-sm text-dervora-dark/60 mb-4">
-          Menampilkan {sortedProducts.length} produk
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <p className="font-body text-sm text-dervora-dark/60">
+            Menampilkan {sortedProducts.length} produk
+            {meta?.total && ` dari total ${meta.total}`}
+          </p>
+        </div>
 
         {/* Loading State */}
         {loading && (
@@ -138,13 +169,40 @@ export const ProductsPage: React.FC = () => {
 
         {/* Product Grid */}
         {!loading && !error && sortedProducts.length > 0 && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
-            {sortedProducts.map((product, index) => (
-              <FadeIn key={product.id} delay={index * 0.05}>
-                <ProductCard product={product} variant="catalog" />
-              </FadeIn>
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
+              {sortedProducts.map((product, index) => (
+                <FadeIn key={product.id} delay={index * 0.05}>
+                  <ProductCard product={product} variant="catalog" />
+                </FadeIn>
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4 mt-12">
+                <button
+                  onClick={handlePrevPage}
+                  disabled={page === 1}
+                  className="p-2 md:px-4 md:py-2 rounded-full border border-dervora-beige bg-white text-dervora-primary font-body text-sm hover:bg-dervora-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                
+                <span className="font-body text-sm text-dervora-dark/70 font-medium">
+                  Halaman {page} dari {totalPages}
+                </span>
+                
+                <button
+                  onClick={handleNextPage}
+                  disabled={page === totalPages}
+                  className="p-2 md:px-4 md:py-2 rounded-full border border-dervora-beige bg-white text-dervora-primary font-body text-sm hover:bg-dervora-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </section>

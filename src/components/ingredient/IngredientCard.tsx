@@ -1,19 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import type { Ingredient } from '../../lib/api';
+import { FlaskConical } from 'lucide-react';
+import type { IngredientCatalog } from '../../lib/api';
 
 interface IngredientCardProps {
-  ingredient: Ingredient;
+  ingredient: IngredientCatalog;
 }
 
 export const IngredientCard: React.FC<IngredientCardProps> = ({ ingredient }) => {
   return (
     <Link
       to={`/ingredients/${ingredient.id}`}
-      className="group flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-dervora-beige shadow-sm hover:shadow-lg hover:border-dervora-primary/30 transition-all duration-300 hover:-translate-y-1"
+      className="group flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-dervora-beige hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
     >
-      {/* Image / Icon Container — ASPECT RATIO FIX */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-dervora-beige/30 flex items-center justify-center">
+      {/* Image */}
+      <div className="relative aspect-square bg-dervora-cream/30 overflow-hidden">
         {ingredient.photoUrl ? (
           <img
             src={ingredient.photoUrl}
@@ -24,22 +25,28 @@ export const IngredientCard: React.FC<IngredientCardProps> = ({ ingredient }) =>
             }}
           />
         ) : (
-          // OPSI C: Initial huruf pertama
-          <span className="font-heading text-7xl font-bold text-dervora-primary/30 group-hover:text-dervora-primary/50 transition-colors select-none">
-            {ingredient.name.charAt(0).toUpperCase()}
-          </span>
+          <div className="w-full h-full flex items-center justify-center bg-dervora-beige/50">
+            <FlaskConical size={32} className="text-dervora-primary/30" />
+          </div>
+        )}
+        
+        {/* Category Badge */}
+        {ingredient.category && (
+          <div className="absolute top-2 left-2 px-2 py-1 bg-white/90 backdrop-blur-sm rounded-md text-[10px] font-body font-semibold text-dervora-primary shadow-sm">
+            {ingredient.category}
+          </div>
         )}
       </div>
 
-      {/* Content — FLEX GROW biar card sama tinggi */}
-      <div className="p-4 flex-grow flex flex-col">
-        <h3 className="font-heading text-base md:text-lg font-bold text-dervora-primary line-clamp-2 mb-2 leading-tight">
+      {/* Content */}
+      <div className="p-4 flex flex-col flex-grow">
+        <h3 className="font-heading text-lg font-bold text-dervora-dark leading-tight line-clamp-2 mb-2 group-hover:text-dervora-primary transition-colors">
           {ingredient.name}
         </h3>
-
-        {ingredient.function && (
-          <p className="font-body text-xs md:text-sm text-dervora-dark/70 line-clamp-2 leading-relaxed">
-            {ingredient.function}
+        
+        {ingredient.commonUses && ingredient.commonUses.length > 0 && (
+          <p className="font-body text-xs text-dervora-dark/60 line-clamp-2">
+            {ingredient.commonUses[0]}
           </p>
         )}
       </div>

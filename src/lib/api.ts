@@ -57,8 +57,12 @@ export interface Ingredient {
   suitableSkin: string[] | null;
   concerns: string[] | null;
   photoUrl: string | null;
-  photoPublicId: string | null;  // ← PASTIKAN INI ADA
   sourceLink: string | null;
+  catalogId: number | null;               // ← TAMBAH (Fase 1)
+  catalog?: IngredientCatalog | null;     // ← TAMBAH (opsional, untuk Product Detail)
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
 }
 
 export interface ProductIngredient {
@@ -91,6 +95,27 @@ export interface Product {
   brand: Brand;
   category: Category | null;
   ingredients: ProductIngredient[];
+}
+
+// ==================== INGREDIENT CATALOG TYPES (Fase 5 — BARU) ====================
+export interface IngredientCatalog {
+  id: number;
+  name: string;
+  photoUrl: string | null;
+  description: string | null;
+  sourceLink: string | null;
+  commonUses: string[] | null;
+  allergyPotential: string | null;
+  skinTypeSummary: string | null;
+  riskBenefit: string | null;
+  category: string | null;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CatalogDetail extends IngredientCatalog {
+  products: Product[];
 }
 
 // ==================== HELPER ====================
@@ -174,7 +199,6 @@ export async function adminCreateBrand(data: {
   });
 }
 
-
 // ==================== CATEGORIES API ====================
 export async function getCategories(): Promise<ApiResponse<Category[]>> {
   return request<Category[]>('/api/categories');
@@ -191,9 +215,24 @@ export async function adminCreateCategory(data: {
   });
 }
 
-// ==================== INGREDIENTS API ====================
+// ==================== INGREDIENTS API (technical — untuk relasi produk) ====================
 export async function getIngredients(): Promise<ApiResponse<Ingredient[]>> {
   return request<Ingredient[]>('/api/ingredients');
+}
+
+// ==================== INGREDIENT CATALOG API (Fase 5 — BARU) ====================
+/**
+ * Fetch semua ingredient catalog (user-facing, 304 items).
+ */
+export async function getIngredientCatalog(): Promise<ApiResponse<IngredientCatalog[]>> {
+  return request<IngredientCatalog[]>('/api/ingredient-catalog');
+}
+
+/**
+ * Fetch detail catalog + list produk yang mengandung ingredient ini.
+ */
+export async function getCatalogDetail(id: number | string): Promise<ApiResponse<CatalogDetail>> {
+  return request<CatalogDetail>(`/api/ingredient-catalog/${id}`);
 }
 
 // ==================== ADMIN API ====================
@@ -294,7 +333,7 @@ export async function adminUploadImage(
 // ==================== ADMIN INGREDIENTS API ====================
 export interface AdminIngredient extends Ingredient {
   _count?: {
-    products: number;
+    productIngredients: number;  // ← FIX: products → productIngredients
   };
 }
 

@@ -133,21 +133,44 @@ export const ProductDetailPage: React.FC = () => {
           </p>
         </section>
 
-        {/* Key Ingredients */}
+        {/* Key Ingredients — CLICKABLE & VISUAL IMPROVED */}
         {product.ingredients.length > 0 && (
           <section className="mt-8">
-            <h2 className="font-heading text-2xl font-bold text-dervora-primary mb-3">
-              Key Ingredients
-            </h2>
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="font-heading text-2xl font-bold text-dervora-primary">
+                Key Ingredients
+              </h2>
+            </div>
             <div className="flex flex-wrap gap-2">
-              {product.ingredients.map((ing, i) => (
-                <span
-                  key={i}
-                  className="px-3 py-1 bg-dervora-beige text-dervora-dark rounded-full font-body text-sm"
-                >
-                  {ing.ingredient.name}
-                </span>
-              ))}
+              {product.ingredients.map((pi, i) => {
+                const catalog = pi.ingredient.catalog;
+
+                // Kalau ingredient punya catalog → link ke catalog detail
+                if (catalog) {
+                  return (
+                    <Link
+                      key={i}
+                      to={`/ingredients/${catalog.id}`}
+                      className="group inline-flex items-center gap-1.5 px-3 py-1.5 bg-dervora-beige text-dervora-dark rounded-full font-body text-sm border border-transparent hover:border-dervora-primary hover:bg-dervora-blush hover:text-dervora-primary transition-all cursor-pointer"
+                    >
+                      {catalog.name}
+                      <span className="text-dervora-dark/40 group-hover:text-dervora-primary transition-colors">
+                      </span>
+                    </Link>
+                  );
+                }
+
+                // Kalau tidak punya catalog → tampilkan sebagai text biasa
+                return (
+                  <span
+                    key={i}
+                    className="px-3 py-1.5 bg-dervora-beige/40 text-dervora-dark/60 rounded-full font-body text-sm"
+                    title="Detail belum tersedia"
+                  >
+                    {pi.ingredient.name}
+                  </span>
+                );
+              })}
             </div>
           </section>
         )}
