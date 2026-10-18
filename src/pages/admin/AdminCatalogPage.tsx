@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Search, Plus, Pencil, Trash2, ArrowLeft, FlaskConical } from 'lucide-react';
+import { Search, Plus, Pencil, Trash2, ArrowLeft, FlaskConical, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { isApiSuccess, adminListCatalog, adminDeleteCatalog, type IngredientCatalog } from '../../lib/api';
@@ -13,18 +13,33 @@ export const AdminCatalogPage: React.FC = () => {
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editData, setEditData] = useState<IngredientCatalog | null>(null);
+  
+  // State untuk Pagination
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    const res = await adminListCatalog({ search, limit: 100 });
+    // Batasi 20 data per halaman
+    const res = await adminListCatalog({ search, page, limit: 20 });
     if (isApiSuccess(res)) {
       setData(res.data);
+      // Ambil total halaman dari meta response
+      if (res.meta && res.meta.totalPages) {
+        setTotalPages(res.meta.totalPages);
+      }
     } else {
       toast.error('Gagal memuat catalog');
     }
     setLoading(false);
+  }, [search, page]);
+
+  // Reset halaman ke 1 saat mencari
+  useEffect(() => {
+    setPage(1);
   }, [search]);
 
+  // Debounce search
   useEffect(() => {
     const timer = setTimeout(() => fetchData(), 500);
     return () => clearTimeout(timer);
@@ -35,7 +50,12 @@ export const AdminCatalogPage: React.FC = () => {
     const res = await adminDeleteCatalog(id);
     if (isApiSuccess(res)) {
       toast.success('Catalog berhasil dihapus');
-      fetchData();
+      // Jika menghapus data terakhir di halaman ini, mundurkan halaman
+      if (data.length === 1 && page > 1) {
+        setPage(page - 1);
+      } else {
+        fetchData();
+      }
     } else {
       toast.error('Gagal menghapus: ' + res.error.message);
     }
@@ -90,7 +110,6 @@ export const AdminCatalogPage: React.FC = () => {
                 <tr key={item.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 text-gray-500">#{item.id}</td>
                   <td className="px-6 py-4 font-medium text-gray-800 flex items-center gap-3">
-                    {/* Tampilkan Gambar jika ada */}
                     {item.photoUrl ? (
                       <img src={item.photoUrl} alt={item.name} className="w-8 h-8 rounded object-cover" />
                     ) : (
@@ -123,6 +142,33 @@ export const AdminCatalogPage: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center gap-4 mt-8">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="p-2 md:px-4 md:py-2 rounded-full border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+          >
+            <ChevronLeft size={16} />
+            <span className="hidden md:inline">Sebelumnya</span>
+          </button>
+          
+          <span className="text-sm font-medium text-gray-600">
+            Halaman {page} dari {totalPages}
+          </span>
+          
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={page === totalPages}
+            className="p-2 md:px-4 md:py-2 rounded-full border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+          >
+            <span className="hidden md:inline">Selanjutnya</span>
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      )}
 
       <CatalogFormModal
         isOpen={modalOpen}
