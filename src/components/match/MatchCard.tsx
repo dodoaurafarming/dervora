@@ -50,7 +50,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({ product, match }) => {
     <>
       <div className="group flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-dervora-beige shadow-sm hover:shadow-lg hover:border-dervora-primary/30 transition-all duration-300 hover:-translate-y-1">
         {/* Image Container */}
-        <Link to={`/products/${product.id}`} className="relative block aspect-[4/5] overflow-hidden bg-dervora-beige/30">
+        <Link to={`/products/${product.id}`} className="relative block aspect-[4/3] overflow-hidden bg-dervora-beige/30">
           {product.imageUrl ? (
             <img
               src={product.imageUrl}

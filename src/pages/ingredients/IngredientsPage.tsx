@@ -80,7 +80,7 @@ export const IngredientsPage: React.FC = () => {
         </div>
 
         {loading && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5 auto-rows-fr mb-8">
             {Array.from({ length: 8 }).map((_, i) => (
               <IngredientCardSkeleton key={i} />
             ))}
@@ -118,7 +118,8 @@ export const IngredientsPage: React.FC = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5 auto-rows-fr mb-8">
+            {/* GRID DIUBAH MENJADI 1 KOLOM DI MOBILE */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5 auto-rows-fr mb-8">
               {displayedCatalog.map((catalogItem, index) => (
                 <FadeIn key={catalogItem.id} delay={index * 0.05} className="h-full">
                   <IngredientCard ingredient={catalogItem as any} />

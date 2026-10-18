@@ -57,7 +57,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         className="group flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-dervora-beige hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
       >
         {/* Image Container */}
-        <div className="relative aspect-[4/5] bg-dervora-cream/30 overflow-hidden">
+        <div className="relative aspect-[4/3] bg-dervora-cream/30 overflow-hidden">
           {product.imageUrl ? (
             <img
               src={product.imageUrl}

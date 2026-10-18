@@ -203,7 +203,7 @@ export const ProductMatchesPage: React.FC = () => {
 
         {/* Loading */}
         {loading && (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
             {Array.from({ length: 8 }).map((_, i) => (
               <ProductCardSkeleton key={i} />
             ))}
@@ -236,7 +236,7 @@ export const ProductMatchesPage: React.FC = () => {
               Menampilkan {displayedProducts.length} dari total {matchedProducts.length} rekomendasi produk
             </p>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
               {displayedProducts.map((item, index) => (
                 <FadeIn key={item.product.id} delay={index * 0.05}>
                   <MatchCard product={item.product} match={item.match} />

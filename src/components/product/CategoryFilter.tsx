@@ -47,11 +47,13 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
     selectedCategory && !POPULAR_CATEGORIES.includes(selectedCategory.name);
 
   return (
-    <div className="flex flex-wrap items-center gap-2">
+    // CONTAINER UTAMA: Dibuat scroll horizontal di mobile
+    <div className="flex flex-nowrap overflow-x-auto items-center gap-2 pb-2 -mx-6 px-6 md:mx-0 md:px-0 md:flex-wrap md:overflow-visible [&::-webkit-scrollbar]:hidden">
+      
       {/* "Semua" */}
       <button
         onClick={() => onChange(null)}
-        className={`px-4 py-2 rounded-full whitespace-nowrap font-body text-sm transition-colors ${
+        className={`px-4 py-2 rounded-full whitespace-nowrap flex-shrink-0 font-body text-sm transition-colors ${
           selectedId === null
             ? 'bg-dervora-primary text-dervora-cream'
             : 'bg-white text-dervora-dark border border-dervora-beige hover:border-dervora-primary'
@@ -65,7 +67,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
         <button
           key={cat.id}
           onClick={() => onChange(cat.id)}
-          className={`px-4 py-2 rounded-full whitespace-nowrap font-body text-sm transition-colors ${
+          className={`px-4 py-2 rounded-full whitespace-nowrap flex-shrink-0 font-body text-sm transition-colors ${
             selectedId === cat.id
               ? 'bg-dervora-primary text-dervora-cream'
               : 'bg-white text-dervora-dark border border-dervora-beige hover:border-dervora-primary'
@@ -76,7 +78,7 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
       ))}
 
       {/* Dropdown "Kategori Lainnya" */}
-      <div className="relative">
+      <div className="relative flex-shrink-0">
         <button
           onClick={() => setIsOpen(!isOpen)}
           className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap font-body text-sm transition-colors ${
@@ -100,7 +102,8 @@ export const CategoryFilter: React.FC<CategoryFilterProps> = ({
               className="fixed inset-0 z-40"
               onClick={() => setIsOpen(false)}
             />
-            <div className="absolute left-0 top-full mt-2 w-64 max-h-80 overflow-y-auto bg-white border border-dervora-beige rounded-2xl shadow-xl z-50">
+            {/* Dropdown disesuaikan agar tidak keluar layar di mobile */}
+            <div className="absolute left-0 md:left-0 top-full mt-2 w-64 max-h-80 overflow-y-auto bg-white border border-dervora-beige rounded-2xl shadow-xl z-50">
               {others.map((cat) => {
                 const isActive = selectedId === cat.id;
                 return (

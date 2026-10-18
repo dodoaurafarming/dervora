@@ -14,7 +14,7 @@ export const IngredientCard: React.FC<IngredientCardProps> = ({ ingredient }) =>
       className="group flex flex-col h-full bg-white rounded-2xl overflow-hidden border border-dervora-beige hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
     >
       {/* Image */}
-      <div className="relative aspect-square bg-dervora-cream/30 overflow-hidden">
+      <div className="relative aspect-[4/3] bg-dervora-cream/30 overflow-hidden">
         {ingredient.photoUrl ? (
           <img
             src={ingredient.photoUrl}

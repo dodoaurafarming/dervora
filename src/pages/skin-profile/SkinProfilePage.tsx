@@ -169,10 +169,10 @@ export const SkinProfilePage: React.FC = () => {
           </FadeIn>
         )}
 
-        {/* CTA */}
+        {/* CTA (Fixed Mobile) */}
         <FadeIn delay={0.3}>
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-8 p-6 md:p-8 bg-dervora-primary/5 rounded-3xl border border-dashed border-dervora-primary/20">
-            <div>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6 mt-8 p-6 md:p-8 bg-dervora-primary/5 rounded-3xl border border-dashed border-dervora-primary/20">
+            <div className="w-full md:w-auto text-center md:text-left">
               <h3 className="font-heading text-2xl font-bold text-dervora-primary mb-1">
                 Siap lihat rekomendasi produk?
               </h3>
@@ -180,16 +180,16 @@ export const SkinProfilePage: React.FC = () => {
                 Kami sudah menyiapkan produk yang cocok dengan profil kulitmu.
               </p>
             </div>
-            <div className="flex gap-3 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
               <button
                 onClick={handleRetake}
-                className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white border border-dervora-beige text-dervora-dark font-body text-sm hover:border-dervora-primary transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white border border-dervora-beige text-dervora-dark font-body text-sm hover:border-dervora-primary transition-colors"
               >
                 <RotateCcw size={14} />
                 Ulangi Quiz
               </button>
-              <Link to="/matches" className="flex-1 sm:flex-none">
-                <Button variant="primary" size="lg" className="w-full whitespace-nowrap">
+              <Link to="/matches" className="w-full sm:w-auto">
+                <Button variant="primary" size="lg" className="w-full whitespace-nowrap justify-center">
                   Lihat Rekomendasi
                   <ArrowRight size={16} className="inline ml-2" />
                 </Button>
