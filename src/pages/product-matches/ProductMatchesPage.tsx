@@ -17,12 +17,16 @@ type SortOption = 'match' | 'price-low' | 'price-high' | 'rating';
 
 export const ProductMatchesPage: React.FC = () => {
   const { answers, completed } = useQuizStore();
-  const { products, loading, error } = useProducts({ page: 1, limit: 100 });
+  // Naikkan limit fetch dari API agar semua produk terambil (maksimal 500 di backend)
+  const { products, loading, error } = useProducts({ page: 1, limit: 500 });
 
   const [categoryFilter, setCategoryFilter] = useState('Semua');
   const [sortBy, setSortBy] = useState<SortOption>('match');
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
+
+  // State untuk "Load More"
+  const [visibleCount, setVisibleCount] = useState(24);
 
   // Hitung skin profile dari answers
   const profile = useMemo(() => calculateSkinProfile(answers), [answers]);
@@ -63,9 +67,16 @@ export const ProductMatchesPage: React.FC = () => {
       return 0;
     });
 
-    // Top 20
-    return filtered.slice(0, 20);
+    return filtered; // KEMBALIKAN SEMUA HASIL (TANPA SLICE)
   }, [products, profile, categoryFilter, sortBy, debouncedSearch]);
+
+  // Ambil produk yang akan ditampilkan berdasarkan visibleCount
+  const displayedProducts = matchedProducts.slice(0, visibleCount);
+
+  // Reset visibleCount jika filter berubah
+  React.useEffect(() => {
+    setVisibleCount(24);
+  }, [categoryFilter, sortBy, debouncedSearch]);
 
   // Kalau belum quiz, redirect ke quiz
   if (!completed) {
@@ -222,19 +233,32 @@ export const ProductMatchesPage: React.FC = () => {
         {!loading && !error && matchedProducts.length > 0 && (
           <>
             <p className="font-body text-sm text-dervora-dark/60 mb-6">
-              Menampilkan {matchedProducts.length} produk terbaik untukmu
+              Menampilkan {displayedProducts.length} dari total {matchedProducts.length} rekomendasi produk
             </p>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
-              {matchedProducts.map((item, index) => (
+              {displayedProducts.map((item, index) => (
                 <FadeIn key={item.product.id} delay={index * 0.05}>
                   <MatchCard product={item.product} match={item.match} />
                 </FadeIn>
               ))}
             </div>
+
+            {/* Tombol Load More */}
+            {visibleCount < matchedProducts.length && (
+              <div className="flex justify-center mt-10">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  onClick={() => setVisibleCount(prev => prev + 24)}
+                >
+                  Tampilkan Lebih Banyak
+                </Button>
+              </div>
+            )}
           </>
         )}
       </div>
     </section>
   );
-};  
+};

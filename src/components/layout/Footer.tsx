@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Music } from 'lucide-react';
+import { Mail } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-     <footer className="w-full bg-dervora-blush/30 border-t border-dervora-beige">
+    <footer className="w-full bg-dervora-blush/30 border-t border-dervora-beige">
       <div className="max-w-6xl mx-auto px-6 md:px-12 lg:px-20 pt-12 md:pt-16 pb-28 md:pb-16">
         {/* Grid 4 kolom */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
@@ -41,9 +41,10 @@ export const Footer: React.FC = () => {
             </h3>
             <ul className="space-y-3 font-body text-base text-dervora-dark/80">
               <li><Link to="/products" className="hover:text-dervora-primary transition-colors">Produk</Link></li>
-              <li><Link to="/journal" className="hover:text-dervora-primary transition-colors">Journal</Link></li>
               <li><Link to="/about" className="hover:text-dervora-primary transition-colors">Tentang Kami</Link></li>
               <li><Link to="/contact" className="hover:text-dervora-primary transition-colors">Kontak</Link></li>
+              <li><Link to="/privacy" className="hover:text-dervora-primary transition-colors">Kebijakan Privasi</Link></li>
+              <li><Link to="/feedback" className="hover:text-dervora-primary transition-colors">Feedback</Link></li>
             </ul>
           </div>
           
@@ -53,18 +54,27 @@ export const Footer: React.FC = () => {
               Connect
             </h3>
             <div className="flex gap-3">
-              <a href="#" aria-label="Instagram" className="w-11 h-11 rounded-full bg-dervora-primary/15 flex items-center justify-center hover:bg-dervora-primary hover:text-dervora-cream transition-all">
-                {/* SVG Manual untuk Instagram */}
+              {/* Instagram */}
+              <a 
+                href="https://www.instagram.com/dervorayourskin/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                aria-label="Instagram" 
+                className="w-11 h-11 rounded-full bg-dervora-primary/15 flex items-center justify-center hover:bg-dervora-primary hover:text-dervora-cream transition-all"
+              >
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
                   <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
                   <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
                 </svg>
               </a>
-              <a href="#" aria-label="TikTok" className="w-11 h-11 rounded-full bg-dervora-primary/15 flex items-center justify-center hover:bg-dervora-primary hover:text-dervora-cream transition-all">
-                <Music size={18} />
-              </a>
-              <a href="#" aria-label="Email" className="w-11 h-11 rounded-full bg-dervora-primary/15 flex items-center justify-center hover:bg-dervora-primary hover:text-dervora-cream transition-all">
+              
+              {/* Email */}
+              <a 
+                href="mailto:dervora.24@gmail.com" 
+                aria-label="Email" 
+                className="w-11 h-11 rounded-full bg-dervora-primary/15 flex items-center justify-center hover:bg-dervora-primary hover:text-dervora-cream transition-all"
+              >
                 <Mail size={18} />
               </a>
             </div>

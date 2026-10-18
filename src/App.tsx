@@ -15,7 +15,18 @@ import { QuizPage } from './pages/quiz/QuizPage';
 import { SkinProfilePage } from './pages/skin-profile/SkinProfilePage';
 import { ProductMatchesPage } from './pages/product-matches/ProductMatchesPage';
 import { AdminIngredientsPage } from './pages/admin/AdminIngredientsPage';
-import { AdminCatalogPage } from './pages/admin/AdminCatalogPage'; // Import halaman baru
+import { AdminCatalogPage } from './pages/admin/AdminCatalogPage';
+
+// IMPORT HALAMAN STATIS BARU
+import { AboutPage } from './pages/static/AboutPage';
+import { ContactPage } from './pages/static/ContactPage';
+import { PrivacyPage } from './pages/static/PrivacyPage';
+import { FeedbackPage } from './pages/static/FeedbackPage';
+
+// IMPORT HALAMAN PROFIL & PENGATURAN
+import { ProfilePage } from './pages/profile/ProfilePage';
+import { SettingsPage } from './pages/profile/SettingsPage';
+
 import { AdminProtectedRoute } from './components/admin/AdminProtectedRoute';
 
 // ==================== PUBLIC LAYOUT ====================
@@ -32,13 +43,6 @@ const PublicLayout: React.FC = () => {
   );
 };
 
-// ==================== DUMMY PAGES ====================
-const ProfilePage = () => (
-  <div className="p-4">
-    <h1 className="text-2xl font-bold text-dervora-primary">Profile Page</h1>
-  </div>
-);
-
 export const App: React.FC = () => {
   return (
     <Router>
@@ -51,10 +55,20 @@ export const App: React.FC = () => {
           <Route path="/ingredients" element={<IngredientsPage />} />
           <Route path="/ingredients/:id" element={<IngredientDetailPage />} />
           <Route path="/my-routine" element={<RoutinePage />} />
+          
+          {/* Rute Profil & Settings */}
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          
           <Route path="/skin-profile" element={<SkinProfilePage />} />
           <Route path="/matches" element={<ProductMatchesPage />} />
           <Route path="/quiz" element={<QuizPage />} />
+          
+          {/* RUTE HALAMAN STATIS BARU */}
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/contact" element={<ContactPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/feedback" element={<FeedbackPage />} />
         </Route>
 
         {/* ==================== ADMIN ROUTES ==================== */}

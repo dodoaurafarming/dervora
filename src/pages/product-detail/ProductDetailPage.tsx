@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Heart, Star, ArrowLeft } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useProduct } from '../../hooks/useProducts';
+import { useRoutineToggle } from '../../hooks/useRoutineToggle';
+import { AddToRoutineModal } from '../../components/routine/AddToRoutineModal';
 import { Button } from '../../components/ui/Button';
 
 export const ProductDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { product, loading, error } = useProduct(id ? parseInt(id, 10) : null);
+  
+  // State untuk Modal Rutinitas
+  const [isRoutineModalOpen, setIsRoutineModalOpen] = useState(false);
+  
+  // Hook untuk cek apakah produk sudah ada di rutinitas
+  // Harus dipanggil di atas (sebelum early return) agar urutan hooks tidak error
+  const { isInRoutine } = useRoutineToggle(product || ({} as any));
 
   // Loading
   if (loading) {
@@ -101,7 +111,7 @@ export const ProductDetailPage: React.FC = () => {
               </div>
               <span className="font-body text-sm text-dervora-dark/60">
                 {product.rating ? product.rating.toFixed(1) : '-'} (
-                {product.reviewCount || 0} ulasan)
+                {product.reviewCount || 0} Terjual)
               </span>
             </div>
 
@@ -111,10 +121,30 @@ export const ProductDetailPage: React.FC = () => {
                 : 'Hubungi Kami'}
             </p>
 
+            {/* DISCLAIMER HARGA */}
+            <p className="font-body text-xs text-dervora-dark/50 mt-2 italic">
+              *Harga diperbarui pada Oktober 2026. Harga dapat berubah sewaktu-waktu.
+            </p>
+
             <div className="flex flex-col sm:flex-row gap-3 mt-6">
-              <Button variant="primary" size="lg" className="whitespace-nowrap">
-                <Heart size={18} className="inline mr-2" />
-                Tambah ke Rutinitas
+              {/* TOMBOL RUTINITAS YANG SUDAH BERFUNGSI */}
+              <Button 
+                variant={isInRoutine ? "outline" : "primary"} 
+                size="lg" 
+                className="whitespace-nowrap"
+                onClick={() => {
+                  if (isInRoutine) {
+                    toast.success('Produk ini sudah ada di rutinitasmu.');
+                  } else {
+                    setIsRoutineModalOpen(true);
+                  }
+                }}
+              >
+                <Heart 
+                  size={18} 
+                  className={`inline mr-2 ${isInRoutine ? 'fill-dervora-primary text-dervora-primary' : ''}`} 
+                />
+                {isInRoutine ? 'Sudah di Rutinitas' : 'Tambah ke Rutinitas'}
               </Button>
               <Button variant="outline" size="lg" className="whitespace-nowrap">
                 Beli Sekarang
@@ -154,8 +184,6 @@ export const ProductDetailPage: React.FC = () => {
                       className="group inline-flex items-center gap-1.5 px-3 py-1.5 bg-dervora-beige text-dervora-dark rounded-full font-body text-sm border border-transparent hover:border-dervora-primary hover:bg-dervora-blush hover:text-dervora-primary transition-all cursor-pointer"
                     >
                       {catalog.name}
-                      <span className="text-dervora-dark/40 group-hover:text-dervora-primary transition-colors">
-                      </span>
                     </Link>
                   );
                 }
@@ -241,6 +269,14 @@ export const ProductDetailPage: React.FC = () => {
           </div>
         </section>
       </div>
+
+      {/* MODAL ADD TO ROUTINE DI PALING BAWAH */}
+      <AddToRoutineModal
+        isOpen={isRoutineModalOpen}
+        onClose={() => setIsRoutineModalOpen(false)}
+        product={product}
+        onSuccess={() => toast.success(`${product.name} ditambahkan ke rutinitas!`)}
+      />
     </div>
   );
 };

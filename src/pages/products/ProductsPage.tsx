@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { useProducts } from '../../hooks/useProducts';
 import { getCategories, type Category } from '../../lib/api';
 import { ProductCard } from '../../components/product/ProductCard';
@@ -7,6 +7,9 @@ import { ProductCardSkeleton } from '../../components/ui/ProductCardSkeleton';
 import { SortDropdown, type SortOption } from '../../components/product/SortDropdown';
 import { CategoryFilter } from '../../components/product/CategoryFilter';
 import { FadeIn } from '../../components/ui/FadeIn';
+import { Button } from '../../components/ui/Button';
+
+const PRODUCTS_PER_PAGE = 24; // Jumlah produk yang muncul pertama kali & saat klik load more
 
 export const ProductsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -14,20 +17,22 @@ export const ProductsPage: React.FC = () => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('popular');
-  const [page, setPage] = useState(1);
+  
+  // State untuk Load More
+  const [visibleCount, setVisibleCount] = useState(PRODUCTS_PER_PAGE);
 
   // Debounce search agar tidak spam API
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearch(searchQuery);
-      setPage(1); // Reset page ke 1 setiap kali search berubah
+      setVisibleCount(PRODUCTS_PER_PAGE); // Reset saat mencari
     }, 500);
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Reset page saat filter kategori berubah
+  // Reset load more saat filter kategori berubah
   useEffect(() => {
-    setPage(1);
+    setVisibleCount(PRODUCTS_PER_PAGE);
   }, [selectedCategoryId]);
 
   // Fetch categories sekali
@@ -37,15 +42,15 @@ export const ProductsPage: React.FC = () => {
     });
   }, []);
 
-  // Fetch products dengan filter & pagination
-  const { products, loading, error, meta } = useProducts({
-    page,
-    limit: 20, // Tampilkan 20 per halaman
+  // Fetch products dengan filter (Ambil banyak data sekaligus)
+  const { products, loading, error } = useProducts({
+    page: 1, // Selalu halaman 1 karena kita ambil semua data
+    limit: 500, // Ambil semua produk (maksimal 500)
     search: debouncedSearch || undefined,
     categoryId: selectedCategoryId || undefined,
   });
 
-  // Sort products di client-side (hanya untuk halaman ini)
+  // Sort products di client-side
   const sortedProducts = useMemo(() => {
     if (!products.length) return products;
 
@@ -68,17 +73,8 @@ export const ProductsPage: React.FC = () => {
     return sorted;
   }, [products, sortBy]);
 
-  const totalPages = meta?.totalPages || 1;
-
-  const handlePrevPage = () => {
-    setPage((p) => Math.max(1, p - 1));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleNextPage = () => {
-    setPage((p) => Math.min(totalPages, p + 1));
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  // Potong data sesuai visibleCount
+  const displayedProducts = sortedProducts.slice(0, visibleCount);
 
   return (
     <section className="w-full bg-dervora-cream pt-6 md:pt-8 pb-12 md:pb-16 px-6 md:px-12 lg:px-20">
@@ -111,7 +107,6 @@ export const ProductsPage: React.FC = () => {
 
         {/* Filter + Sort Row */}
         <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 mb-6">
-          {/* Category Filter */}
           <div className="flex-1">
             <CategoryFilter
               categories={categories}
@@ -119,8 +114,6 @@ export const ProductsPage: React.FC = () => {
               onChange={setSelectedCategoryId}
             />
           </div>
-
-          {/* Sort Dropdown */}
           <div className="flex-shrink-0">
             <SortDropdown value={sortBy} onChange={setSortBy} />
           </div>
@@ -129,8 +122,7 @@ export const ProductsPage: React.FC = () => {
         {/* Product Count */}
         <div className="flex items-center justify-between mb-4">
           <p className="font-body text-sm text-dervora-dark/60">
-            Menampilkan {sortedProducts.length} produk
-            {meta?.total && ` dari total ${meta.total}`}
+            Menampilkan {displayedProducts.length} dari total {sortedProducts.length} produk
           </p>
         </div>
 
@@ -171,35 +163,24 @@ export const ProductsPage: React.FC = () => {
         {!loading && !error && sortedProducts.length > 0 && (
           <>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
-              {sortedProducts.map((product, index) => (
+              {displayedProducts.map((product, index) => (
                 <FadeIn key={product.id} delay={index * 0.05}>
                   <ProductCard product={product} variant="catalog" />
                 </FadeIn>
               ))}
             </div>
 
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-4 mt-12">
-                <button
-                  onClick={handlePrevPage}
-                  disabled={page === 1}
-                  className="p-2 md:px-4 md:py-2 rounded-full border border-dervora-beige bg-white text-dervora-primary font-body text-sm hover:bg-dervora-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            {/* Tombol Load More */}
+            {visibleCount < sortedProducts.length && (
+              <div className="flex justify-center mt-10">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  onClick={() => setVisibleCount(prev => prev + PRODUCTS_PER_PAGE)}
+                  className="px-8"
                 >
-                  <ChevronLeft size={20} />
-                </button>
-                
-                <span className="font-body text-sm text-dervora-dark/70 font-medium">
-                  Halaman {page} dari {totalPages}
-                </span>
-                
-                <button
-                  onClick={handleNextPage}
-                  disabled={page === totalPages}
-                  className="p-2 md:px-4 md:py-2 rounded-full border border-dervora-beige bg-white text-dervora-primary font-body text-sm hover:bg-dervora-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-                >
-                  <ChevronRight size={20} />
-                </button>
+                  Tampilkan Lebih Banyak
+                </Button>
               </div>
             )}
           </>

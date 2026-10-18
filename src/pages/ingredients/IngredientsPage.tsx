@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { Search, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Sparkles } from 'lucide-react';
 import { useIngredientCatalog } from '../../hooks/useIngredients';
 import { IngredientCard } from '../../components/ingredient/IngredientCard';
 import { IngredientCardSkeleton } from '../../components/ingredient/IngredientCardSkeleton';
 import { FadeIn } from '../../components/ui/FadeIn';
+import { Button } from '../../components/ui/Button';
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 24; // Jumlah yang muncul pertama kali dan saat load more
 
 export const IngredientsPage: React.FC = () => {
   const {
@@ -21,19 +22,16 @@ export const IngredientsPage: React.FC = () => {
     refetch,
   } = useIngredientCatalog();
 
-  const [page, setPage] = useState(1);
+  // State untuk Load More
+  const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
-  // Reset page ke 1 setiap kali search atau filter berubah
-  React.useEffect(() => {
-    setPage(1);
+  // Reset visibleCount ke awal setiap kali search atau filter berubah
+  useEffect(() => {
+    setVisibleCount(ITEMS_PER_PAGE);
   }, [searchQuery, categoryFilter]);
 
-  // Pagination logic
-  const totalPages = Math.ceil(catalog.length / ITEMS_PER_PAGE);
-  const paginatedCatalog = catalog.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
-  );
+  // Potong data catalog sesuai visibleCount
+  const displayedCatalog = catalog.slice(0, visibleCount);
 
   return (
     <section className="w-full bg-dervora-cream pt-6 md:pt-8 pb-12 md:pb-16 px-6 md:px-12 lg:px-20">
@@ -115,39 +113,30 @@ export const IngredientsPage: React.FC = () => {
           <>
             <div className="flex items-center justify-between mb-6">
               <p className="font-body text-sm text-dervora-dark/60">
-                Menampilkan {paginatedCatalog.length} dari {catalog.length} ingredient
+                Menampilkan {displayedCatalog.length} dari {catalog.length} ingredient
                 {totalCount !== catalog.length && ` (dari total ${totalCount})`}
               </p>
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5 auto-rows-fr mb-8">
-              {paginatedCatalog.map((catalogItem, index) => (
+              {displayedCatalog.map((catalogItem, index) => (
                 <FadeIn key={catalogItem.id} delay={index * 0.05} className="h-full">
                   <IngredientCard ingredient={catalogItem as any} />
                 </FadeIn>
               ))}
             </div>
 
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-4 mt-8">
-                <button
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                  className="p-2 rounded-full border border-dervora-beige bg-white hover:bg-dervora-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            {/* Tombol Load More */}
+            {visibleCount < catalog.length && (
+              <div className="flex justify-center mt-10">
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  onClick={() => setVisibleCount(prev => prev + ITEMS_PER_PAGE)}
+                  className="px-8"
                 >
-                  <ChevronLeft size={20} className="text-dervora-primary" />
-                </button>
-                <span className="font-body text-sm text-dervora-dark">
-                  Halaman {page} dari {totalPages}
-                </span>
-                <button
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                  className="p-2 rounded-full border border-dervora-beige bg-white hover:bg-dervora-cream disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  <ChevronRight size={20} className="text-dervora-primary" />
-                </button>
+                  Tampilkan Lebih Banyak
+                </Button>
               </div>
             )}
           </>
