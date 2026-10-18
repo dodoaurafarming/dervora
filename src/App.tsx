@@ -15,6 +15,7 @@ import { QuizPage } from './pages/quiz/QuizPage';
 import { SkinProfilePage } from './pages/skin-profile/SkinProfilePage';
 import { ProductMatchesPage } from './pages/product-matches/ProductMatchesPage';
 import { AdminIngredientsPage } from './pages/admin/AdminIngredientsPage';
+import { AdminCatalogPage } from './pages/admin/AdminCatalogPage'; // Import halaman baru
 import { AdminProtectedRoute } from './components/admin/AdminProtectedRoute';
 
 // ==================== PUBLIC LAYOUT ====================
@@ -58,6 +59,7 @@ export const App: React.FC = () => {
 
         {/* ==================== ADMIN ROUTES ==================== */}
         <Route path="/dervora-control-9k2x/login" element={<LoginPage />} />
+        
         <Route
           path="/dervora-control-9k2x/dashboard"
           element={
@@ -66,14 +68,26 @@ export const App: React.FC = () => {
             </AdminProtectedRoute>
           }
         />
+
+        {/* Menu Admin Ingredients (Tabel lama) */}
         <Route
-        path="/dervora-control-9k2x/ingredients"
-        element={
-          <AdminProtectedRoute>
-            <AdminIngredientsPage />
-          </AdminProtectedRoute>
-        }
-/>
+          path="/dervora-control-9k2x/ingredients"
+          element={
+            <AdminProtectedRoute>
+              <AdminIngredientsPage />
+            </AdminProtectedRoute>
+          }
+        />
+
+        {/* Menu Admin Catalog (Tabel baru yang rapi) */}
+        <Route
+          path="/dervora-control-9k2x/catalog"
+          element={
+            <AdminProtectedRoute>
+              <AdminCatalogPage />
+            </AdminProtectedRoute>
+          }
+        />
 
         {/* ==================== FALLBACK ==================== */}
         <Route path="*" element={<Navigate to="/" replace />} />

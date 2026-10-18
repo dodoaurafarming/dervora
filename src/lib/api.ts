@@ -58,8 +58,8 @@ export interface Ingredient {
   concerns: string[] | null;
   photoUrl: string | null;
   sourceLink: string | null;
-  catalogId: number | null;               // ← TAMBAH (Fase 1)
-  catalog?: IngredientCatalog | null;     // ← TAMBAH (opsional, untuk Product Detail)
+  catalogId: number | null;
+  catalog?: IngredientCatalog | null;
   createdAt?: string;
   updatedAt?: string;
   deletedAt?: string | null;
@@ -97,7 +97,7 @@ export interface Product {
   ingredients: ProductIngredient[];
 }
 
-// ==================== INGREDIENT CATALOG TYPES (Fase 5 — BARU) ====================
+// ==================== INGREDIENT CATALOG TYPES ====================
 export interface IngredientCatalog {
   id: number;
   name: string;
@@ -215,22 +215,16 @@ export async function adminCreateCategory(data: {
   });
 }
 
-// ==================== INGREDIENTS API (technical — untuk relasi produk) ====================
+// ==================== INGREDIENTS API (technical) ====================
 export async function getIngredients(): Promise<ApiResponse<Ingredient[]>> {
   return request<Ingredient[]>('/api/ingredients');
 }
 
-// ==================== INGREDIENT CATALOG API (Fase 5 — BARU) ====================
-/**
- * Fetch semua ingredient catalog (user-facing, 304 items).
- */
+// ==================== INGREDIENT CATALOG API (public) ====================
 export async function getIngredientCatalog(): Promise<ApiResponse<IngredientCatalog[]>> {
   return request<IngredientCatalog[]>('/api/ingredient-catalog');
 }
 
-/**
- * Fetch detail catalog + list produk yang mengandung ingredient ini.
- */
 export async function getCatalogDetail(id: number | string): Promise<ApiResponse<CatalogDetail>> {
   return request<CatalogDetail>(`/api/ingredient-catalog/${id}`);
 }
@@ -330,10 +324,10 @@ export async function adminUploadImage(
   }
 }
 
-// ==================== ADMIN INGREDIENTS API ====================
+// ==================== ADMIN INGREDIENTS API (technical) ====================
 export interface AdminIngredient extends Ingredient {
   _count?: {
-    productIngredients: number;  // ← FIX: products → productIngredients
+    productIngredients: number;
   };
 }
 
@@ -408,4 +402,45 @@ export async function adminUploadIngredientImage(
       },
     };
   }
+}
+
+// ==================== ADMIN INGREDIENT CATALOG API ====================
+export async function adminListCatalog(params?: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}): Promise<ApiResponse<IngredientCatalog[]>> {
+  const query = new URLSearchParams();
+  if (params?.page) query.set('page', String(params.page));
+  if (params?.limit) query.set('limit', String(params.limit));
+  if (params?.search) query.set('search', params.search);
+  const qs = query.toString();
+  return authFetch<IngredientCatalog[]>(`/api/admin/ingredient-catalog${qs ? `?${qs}` : ''}`);
+}
+
+export async function adminCreateCatalog(
+  data: Partial<IngredientCatalog>
+): Promise<ApiResponse<IngredientCatalog>> {
+  return authFetch<IngredientCatalog>('/api/admin/ingredient-catalog', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function adminUpdateCatalog(
+  id: number,
+  data: Partial<IngredientCatalog>
+): Promise<ApiResponse<IngredientCatalog>> {
+  return authFetch<IngredientCatalog>(`/api/admin/ingredient-catalog/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function adminDeleteCatalog(
+  id: number
+): Promise<ApiResponse<{ id: number; deleted: boolean }>> {
+  return authFetch<{ id: number; deleted: boolean }>(`/api/admin/ingredient-catalog/${id}`, {
+    method: 'DELETE',
+  });
 }

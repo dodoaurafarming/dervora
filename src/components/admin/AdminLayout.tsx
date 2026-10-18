@@ -44,8 +44,9 @@ export const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
             >
               Dashboard
             </Link>
+            {/* Menu Ingredients lama DIHAPUS. Menu Catalog diganti nama jadi Ingredients */}
             <Link
-              to="/dervora-control-9k2x/ingredients"
+              to="/dervora-control-9k2x/catalog"
               className="font-body text-sm text-dervora-dark hover:text-dervora-primary transition-colors"
             >
               Ingredients

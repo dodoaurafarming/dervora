@@ -8,15 +8,12 @@ const ADMIN_TABS = [
     label: 'Dashboard',
     path: '/dervora-control-9k2x/dashboard',
   },
-  {
-    icon: Package,
-    label: 'Products',
-    path: '/dervora-control-9k2x/dashboard', // dashboard = products view
-  },
+  // Menu Ingredients lama (path /ingredients) dihapus dari sini.
+  // Menu Catalog diganti namanya menjadi 'Ingredients'
   {
     icon: FlaskConical,
     label: 'Ingredients',
-    path: '/dervora-control-9k2x/ingredients',
+    path: '/dervora-control-9k2x/catalog',
   },
 ];
 
@@ -28,11 +25,12 @@ export const AdminBottomNav: React.FC = () => {
       <div className="flex justify-around items-center py-2">
         {ADMIN_TABS.map((tab, index) => {
           const Icon = tab.icon;
-          // Untuk Products dan Dashboard, path sama → hanya highlight Dashboard
-          const isActive =
-            tab.path === '/dervora-control-9k2x/dashboard'
-              ? location.pathname === tab.path && index === 0
-              : location.pathname === tab.path;
+          let isActive = false;
+          if (tab.path === '/dervora-control-9k2x/dashboard') {
+            isActive = location.pathname === tab.path && index === 0;
+          } else {
+            isActive = location.pathname === tab.path;
+          }
 
           return (
             <Link
