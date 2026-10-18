@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 import { Button } from '../../components/ui/Button';
 
 // GANTI DENGAN ACCESS KEY DARI WEB3FORMS
-const WEB3FORMS_ACCESS_KEY = '72d83d03-c18b-4afc-81aa-04723575eb37'
+const WEB3FORMS_ACCESS_KEY = import.meta.env.VITE_WEB3FORMS_KEY;
 
 export const FeedbackPage: React.FC = () => {
   const [message, setMessage] = useState('');
