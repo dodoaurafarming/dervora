@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { LayoutDashboard, FlaskConical, Package } from 'lucide-react';
+import { LayoutDashboard, FlaskConical } from 'lucide-react';
 
 const ADMIN_TABS = [
   {
