@@ -12,25 +12,25 @@ const TEAM_MEMBERS = [
     role: 'The Manager',
     description: 'Menyusun jadwal dan target; memantau progres; memimpin rapat; mencatat risiko dan keputusan; menghubungkan tim dengan pengembang website.',
     // Ganti dengan link foto dari Cloudinary atau folder public
-    photoUrl: 'https://res.cloudinary.com/atrogcxj/image/upload/v1792311329/WhatsApp_Image_2026-10-18_at_15.14.02.jpg'
+    photoUrl: 'https://res.cloudinary.com/atrogcxj/image/upload/v1792311329/WhatsApp_Image_2026-10-18_at_15.14.02.jpg',
   },
   {
     name: 'Naisya Andini',
-    nim: 'I121241048',
+    nim: ' I1021241048',
     role: 'The Scientist',
     description: 'Menelusuri literatur tipe kulit dan bahan aktif; menyusun dasar penilaian kecocokan produk; menjaga kewajaran klaim kesehatan.',
     photoUrl: 'https://res.cloudinary.com/atrogcxj/image/upload/v1792311239/WhatsApp_Image_2026-10-18_at_15.11.46.jpg'
   },
   {
-    name: 'Triyana Apriyani',
+    name: 'Triana Apriani',
     nim: 'I1021241084',
     role: 'The Scientist',
     description: 'Memeriksa komposisi, fungsi bahan aktif, sumber resmi, dan status BPOM; mencatat sumber serta tanggal pembaruan.',
-    photoUrl: 'https://res.cloudinary.com/atrogcxj/image/upload/v1792312481/WhatsApp_Image_2026-10-18_at_15.31.55.jpg'
+    photoUrl: 'https://res.cloudinary.com/atrogcxj/image/upload/v1792312481/WhatsApp_Image_2026-10-18_at_15.31.55.jpg',
   },
   {
     name: 'Naura Mukhbita Salsabila',
-    nim: 'I1021341087',
+    nim: ' I1021241087',
     role: 'The Scientist',
     description: 'Mengelompokkan produk menurut jenis, bahan aktif, dan kesesuaian kulit; menyiapkan data terstruktur untuk website.',
     photoUrl: 'https://res.cloudinary.com/atrogcxj/image/upload/v1792312042/WhatsApp_Image_2026-10-18_at_15.25.43.jpg'
