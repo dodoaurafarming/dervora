@@ -15,6 +15,7 @@ export interface ProductFormData {
   imagePublicId: string | null;
   skinTypes: string[];
   concerns: string[];
+  buyLink: string;
   ingredientIds: number[];
 }
 

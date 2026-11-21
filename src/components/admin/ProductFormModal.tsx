@@ -57,6 +57,7 @@ const EMPTY_FORM: ProductFormData = {
   howToUse: '',
   notes: '',
   bpom: '',
+  buyLink: '', // <-- TAMBAHAN
   imageUrl: null,
   imagePublicId: null,
   skinTypes: [],
@@ -112,6 +113,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
           howToUse: editProduct.howToUse || '',
           notes: editProduct.notes || '',
           bpom: editProduct.bpom || '',
+          buyLink: editProduct.buyLink || '', // <-- TAMBAHAN
           imageUrl: editProduct.imageUrl,
           imagePublicId: editProduct.imagePublicId,
           skinTypes: editProduct.skinTypes || [],
@@ -204,6 +206,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
       howToUse: formData.howToUse || undefined,
       notes: formData.notes || undefined,
       bpom: formData.bpom || undefined,
+      buyLink: formData.buyLink || undefined, // <-- TAMBAHAN
       imageUrl: formData.imageUrl || undefined,
       imagePublicId: formData.imagePublicId || undefined,
       skinTypes: formData.skinTypes.length > 0 ? formData.skinTypes : undefined,
@@ -357,7 +360,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                 />
               </FormField>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField label="Harga (Rp)" error={errors.price}>
                   <input
                     type="number"
@@ -377,9 +380,20 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                     className="w-full px-4 py-2.5 rounded-xl border border-dervora-beige bg-white focus:outline-none focus:ring-2 focus:ring-dervora-primary/50 font-body text-sm"
                   />
                 </FormField>
+
+                {/* <-- TAMBAHAN: Form Field untuk Link Produk --> */}
+                <FormField label="Link Produk (URL Pembelian)">
+                  <input
+                    type="url"
+                    value={formData.buyLink}
+                    onChange={(e) => updateField('buyLink', e.target.value)}
+                    placeholder="https://shopee.co.id/..."
+                    className="w-full px-4 py-2.5 rounded-xl border border-dervora-beige bg-white focus:outline-none focus:ring-2 focus:ring-dervora-primary/50 font-body text-sm"
+                  />
+                </FormField>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField label="Size">
                   <input
                     type="text"
@@ -390,26 +404,28 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
                   />
                 </FormField>
 
-                <FormField label="Rating (0-5)" error={errors.rating}>
-                  <input
-                    type="number"
-                    step="0.1"
-                    value={formData.rating}
-                    onChange={(e) => updateField('rating', e.target.value)}
-                    placeholder="4.8"
-                    className="w-full px-4 py-2.5 rounded-xl border border-dervora-beige bg-white focus:outline-none focus:ring-2 focus:ring-dervora-primary/50 font-body text-sm"
-                  />
-                </FormField>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField label="Rating (0-5)" error={errors.rating}>
+                    <input
+                      type="number"
+                      step="0.1"
+                      value={formData.rating}
+                      onChange={(e) => updateField('rating', e.target.value)}
+                      placeholder="4.8"
+                      className="w-full px-4 py-2.5 rounded-xl border border-dervora-beige bg-white focus:outline-none focus:ring-2 focus:ring-dervora-primary/50 font-body text-sm"
+                    />
+                  </FormField>
 
-                <FormField label="Terjual" error={errors.reviewCount}>
-                  <input
-                    type="number"
-                    value={formData.reviewCount}
-                    onChange={(e) => updateField('reviewCount', e.target.value)}
-                    placeholder="Contoh: 100"
-                    className="w-full px-4 py-2.5 rounded-xl border border-dervora-beige bg-white focus:outline-none focus:ring-2 focus:ring-dervora-primary/50 font-body text-sm"
-                  />
-                </FormField>
+                  <FormField label="Terjual" error={errors.reviewCount}>
+                    <input
+                      type="number"
+                      value={formData.reviewCount}
+                      onChange={(e) => updateField('reviewCount', e.target.value)}
+                      placeholder="Contoh: 100"
+                      className="w-full px-4 py-2.5 rounded-xl border border-dervora-beige bg-white focus:outline-none focus:ring-2 focus:ring-dervora-primary/50 font-body text-sm"
+                    />
+                  </FormField>
+                </div>
               </div>
 
               <FormField label="Halal">
@@ -512,7 +528,7 @@ export const ProductFormModal: React.FC<ProductFormModalProps> = ({
             </div>
           </div>
 
-          {/* Section: Ingredients */}
+          {/* Section: Ingredients (TIDAK DIUBAH SAMA SEKALI) */}
           <div>
             <h3 className="font-heading text-lg font-bold text-dervora-primary mb-4 pb-2 border-b border-dervora-beige">
               Ingredients

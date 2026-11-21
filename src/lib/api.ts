@@ -89,6 +89,7 @@ export interface Product {
   notes: string | null;
   skinTypes: string[] | null;
   concerns: string[] | null;
+  buyLink: string | null; // <-- TAMBAHKAN BARIS INI
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
