@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Moon, AlertTriangle } from 'lucide-react';
+import { Sun, Moon, AlertTriangle, Check } from 'lucide-react';
 import { Modal } from '../admin/Modal';
 import { Button } from '../ui/Button';
-import { useRoutineStore } from '../../store/routineStore';
+import {
+  useRoutineStore,
+  type RoutineSlotTarget,
+} from '../../store/routineStore';
 import { MORNING_SLOTS, NIGHT_SLOTS } from '../../data/routineSlots';
 import type { Product } from '../../lib/api';
 
@@ -13,21 +16,31 @@ interface AddToRoutineModalProps {
   onSuccess?: () => void;
 }
 
+interface SelectedTimes {
+  morning: boolean;
+  night: boolean;
+}
+
 export const AddToRoutineModal: React.FC<AddToRoutineModalProps> = ({
   isOpen,
   onClose,
   product,
   onSuccess,
 }) => {
-  const { morning, night, addProduct } = useRoutineStore();
-  const [selectedTime, setSelectedTime] = useState<'morning' | 'night' | null>(null);
+  const { morning, night, addProductToSlots } = useRoutineStore();
+  const [selectedTimes, setSelectedTimes] = useState<SelectedTimes>({
+    morning: false,
+    night: false,
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Reset state saat modal dibuka
+  // Reset pilihan & status submit saat modal dibuka atau produk berganti
   useEffect(() => {
     if (isOpen) {
-      setSelectedTime(null);
+      setSelectedTimes({ morning: false, night: false });
+      setIsSubmitting(false);
     }
-  }, [isOpen]);
+  }, [isOpen, product?.id]);
 
   if (!product) return null;
 
@@ -42,39 +55,98 @@ export const AddToRoutineModal: React.FC<AddToRoutineModalProps> = ({
   const currentMorningProduct = morningSlot ? morning[morningSlot.id] : null;
   const currentNightProduct = nightSlot ? night[nightSlot.id] : null;
 
-  const hasMorningConflict = !!currentMorningProduct && currentMorningProduct.id !== product.id;
-  const hasNightConflict = !!currentNightProduct && currentNightProduct.id !== product.id;
+  const isAlreadyInMorning = currentMorningProduct?.id === product.id;
+  const isAlreadyInNight = currentNightProduct?.id === product.id;
 
-  const handleConfirm = () => {
-    if (!selectedTime) return;
+  const hasMorningConflict = !!currentMorningProduct && !isAlreadyInMorning;
+  const hasNightConflict = !!currentNightProduct && !isAlreadyInNight;
 
-    const slot = selectedTime === 'morning' ? morningSlot : nightSlot;
-    if (!slot) return;
+  const canSelectBoth = !!morningSlot && !!nightSlot;
+  const isBothSelected = selectedTimes.morning && selectedTimes.night;
+  const hasSelection = selectedTimes.morning || selectedTimes.night;
 
-    // Add product ke slot (replace otomatis karena store pakai key-based)
-    addProduct(slot.id, product, selectedTime);
-    onSuccess?.();
+  const handleClose = () => {
+    if (isSubmitting) return;
     onClose();
   };
+
+  const toggleTime = (time: 'morning' | 'night') => {
+    if (isSubmitting) return;
+    if (time === 'morning' && !morningSlot) return;
+    if (time === 'night' && !nightSlot) return;
+
+    setSelectedTimes((prev) => ({
+      ...prev,
+      [time]: !prev[time],
+    }));
+  };
+
+  const handleToggleBoth = () => {
+    if (!canSelectBoth || isSubmitting) return;
+    const nextValue = !isBothSelected;
+    setSelectedTimes({
+      morning: nextValue,
+      night: nextValue,
+    });
+  };
+
+  const handleConfirm = async () => {
+    if (!hasSelection || isSubmitting) return;
+
+    const targets: RoutineSlotTarget[] = [];
+
+    if (selectedTimes.morning && morningSlot) {
+      targets.push({ slotId: morningSlot.id, timeOfDay: 'morning' });
+    }
+    if (selectedTimes.night && nightSlot) {
+      targets.push({ slotId: nightSlot.id, timeOfDay: 'night' });
+    }
+
+    if (targets.length === 0) return;
+
+    setIsSubmitting(true);
+    try {
+      const ok = await addProductToSlots(product, targets);
+      if (ok) {
+        onSuccess?.();
+        onClose();
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const confirmLabel = isBothSelected
+    ? 'Tambah ke Pagi & Malam'
+    : selectedTimes.morning
+      ? 'Tambah ke Pagi'
+      : selectedTimes.night
+        ? 'Tambah ke Malam'
+        : 'Konfirmasi';
 
   return (
     <Modal
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={handleClose}
       title="Tambah ke Rutinitas"
       size="md"
       footer={
         <div className="flex justify-end gap-3">
-          <Button variant="ghost" size="md" onClick={onClose}>
+          <Button
+            variant="ghost"
+            size="md"
+            onClick={handleClose}
+            disabled={isSubmitting}
+          >
             Batal
           </Button>
           <Button
             variant="primary"
             size="md"
             onClick={handleConfirm}
-            disabled={!selectedTime}
+            disabled={!hasSelection || isSubmitting}
           >
-            Konfirmasi
+            {isSubmitting ? 'Menyimpan...' : confirmLabel}
           </Button>
         </div>
       }
@@ -109,24 +181,59 @@ export const AddToRoutineModal: React.FC<AddToRoutineModalProps> = ({
 
         {/* Time Selection */}
         <div>
-          <p className="font-body text-sm font-medium text-dervora-dark mb-3">
-            Kapan kamu mau pakai produk ini?
-          </p>
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <div>
+              <p className="font-body text-sm font-medium text-dervora-dark">
+                Kapan kamu mau pakai produk ini?
+              </p>
+              {canSelectBoth && (
+                <p className="font-body text-xs text-dervora-dark/50 mt-0.5">
+                  Bisa pilih salah satu atau keduanya sekaligus
+                </p>
+              )}
+            </div>
+
+            {canSelectBoth && (
+              <button
+                type="button"
+                onClick={handleToggleBoth}
+                disabled={isSubmitting}
+                className="font-body text-xs font-semibold text-dervora-primary hover:underline flex-shrink-0 disabled:opacity-50"
+              >
+                {isBothSelected ? 'Batal semua' : 'Pilih keduanya'}
+              </button>
+            )}
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             {/* Morning */}
             <button
-              onClick={() => setSelectedTime('morning')}
-              disabled={!morningSlot}
-              className={`p-4 rounded-2xl border-2 transition-all text-left ${
-                selectedTime === 'morning'
+              type="button"
+              aria-pressed={selectedTimes.morning}
+              onClick={() => toggleTime('morning')}
+              disabled={!morningSlot || isSubmitting}
+              className={`relative p-4 rounded-2xl border-2 transition-all text-left ${
+                selectedTimes.morning
                   ? 'border-dervora-primary bg-dervora-primary/5'
                   : 'border-dervora-beige bg-white hover:border-dervora-primary/40'
-              } ${!morningSlot ? 'opacity-40 cursor-not-allowed' : ''}`}
+              } ${!morningSlot || isSubmitting ? 'opacity-40 cursor-not-allowed' : ''}`}
             >
+              {morningSlot && (
+                <span
+                  className={`absolute top-3.5 right-3.5 w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${
+                    selectedTimes.morning
+                      ? 'bg-dervora-primary border-dervora-primary text-white'
+                      : 'border-dervora-beige bg-white'
+                  }`}
+                >
+                  {selectedTimes.morning && <Check size={12} strokeWidth={3} />}
+                </span>
+              )}
+
               <Sun
                 size={28}
                 className={`mb-2 ${
-                  selectedTime === 'morning'
+                  selectedTimes.morning
                     ? 'text-dervora-primary'
                     : 'text-dervora-dark/60'
                 }`}
@@ -137,22 +244,41 @@ export const AddToRoutineModal: React.FC<AddToRoutineModalProps> = ({
               <p className="font-body text-xs text-dervora-dark/60 mt-1">
                 {morningSlot ? `Slot ${morningSlot.name}` : 'Tidak tersedia'}
               </p>
+              {isAlreadyInMorning && (
+                <p className="font-body text-[11px] font-medium text-dervora-primary mt-1.5">
+                  Sudah ada di slot ini
+                </p>
+              )}
             </button>
 
             {/* Night */}
             <button
-              onClick={() => setSelectedTime('night')}
-              disabled={!nightSlot}
-              className={`p-4 rounded-2xl border-2 transition-all text-left ${
-                selectedTime === 'night'
+              type="button"
+              aria-pressed={selectedTimes.night}
+              onClick={() => toggleTime('night')}
+              disabled={!nightSlot || isSubmitting}
+              className={`relative p-4 rounded-2xl border-2 transition-all text-left ${
+                selectedTimes.night
                   ? 'border-dervora-primary bg-dervora-primary/5'
                   : 'border-dervora-beige bg-white hover:border-dervora-primary/40'
-              } ${!nightSlot ? 'opacity-40 cursor-not-allowed' : ''}`}
+              } ${!nightSlot || isSubmitting ? 'opacity-40 cursor-not-allowed' : ''}`}
             >
+              {nightSlot && (
+                <span
+                  className={`absolute top-3.5 right-3.5 w-5 h-5 rounded-full flex items-center justify-center border transition-colors ${
+                    selectedTimes.night
+                      ? 'bg-dervora-primary border-dervora-primary text-white'
+                      : 'border-dervora-beige bg-white'
+                  }`}
+                >
+                  {selectedTimes.night && <Check size={12} strokeWidth={3} />}
+                </span>
+              )}
+
               <Moon
                 size={28}
                 className={`mb-2 ${
-                  selectedTime === 'night'
+                  selectedTimes.night
                     ? 'text-dervora-primary'
                     : 'text-dervora-dark/60'
                 }`}
@@ -163,28 +289,44 @@ export const AddToRoutineModal: React.FC<AddToRoutineModalProps> = ({
               <p className="font-body text-xs text-dervora-dark/60 mt-1">
                 {nightSlot ? `Slot ${nightSlot.name}` : 'Tidak tersedia'}
               </p>
+              {isAlreadyInNight && (
+                <p className="font-body text-[11px] font-medium text-dervora-primary mt-1.5">
+                  Sudah ada di slot ini
+                </p>
+              )}
             </button>
           </div>
         </div>
 
-        {/* Conflict Warning */}
-        {selectedTime === 'morning' && hasMorningConflict && (
-          <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200">
-            <AlertTriangle size={16} className="text-amber-600 flex-shrink-0 mt-0.5" />
-            <p className="font-body text-xs text-amber-700 leading-relaxed">
-              Slot <strong>Pagi - {morningSlot?.name}</strong> sudah terisi oleh{' '}
-              <strong>{currentMorningProduct?.name}</strong>. Produk akan digantikan.
-            </p>
-          </div>
-        )}
+        {/* Conflict Warnings */}
+        {((selectedTimes.morning && hasMorningConflict) ||
+          (selectedTimes.night && hasNightConflict)) && (
+          <div className="space-y-2">
+            {selectedTimes.morning && hasMorningConflict && (
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200">
+                <AlertTriangle
+                  size={16}
+                  className="text-amber-600 flex-shrink-0 mt-0.5"
+                />
+                <p className="font-body text-xs text-amber-700 leading-relaxed">
+                  Slot <strong>Pagi - {morningSlot?.name}</strong> sudah terisi oleh{' '}
+                  <strong>{currentMorningProduct?.name}</strong>. Produk akan digantikan.
+                </p>
+              </div>
+            )}
 
-        {selectedTime === 'night' && hasNightConflict && (
-          <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200">
-            <AlertTriangle size={16} className="text-amber-600 flex-shrink-0 mt-0.5" />
-            <p className="font-body text-xs text-amber-700 leading-relaxed">
-              Slot <strong>Malam - {nightSlot?.name}</strong> sudah terisi oleh{' '}
-              <strong>{currentNightProduct?.name}</strong>. Produk akan digantikan.
-            </p>
+            {selectedTimes.night && hasNightConflict && (
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200">
+                <AlertTriangle
+                  size={16}
+                  className="text-amber-600 flex-shrink-0 mt-0.5"
+                />
+                <p className="font-body text-xs text-amber-700 leading-relaxed">
+                  Slot <strong>Malam - {nightSlot?.name}</strong> sudah terisi oleh{' '}
+                  <strong>{currentNightProduct?.name}</strong>. Produk akan digantikan.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

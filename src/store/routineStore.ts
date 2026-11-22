@@ -7,13 +7,19 @@ import { MORNING_SLOTS, NIGHT_SLOTS, type RoutineSlot } from '../data/routineSlo
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
+export interface RoutineSlotTarget {
+  slotId: string;
+  timeOfDay: 'morning' | 'night';
+}
+
 interface RoutineState {
   morning: Record<string, Product | null>;
   night: Record<string, Product | null>;
   isLoading: boolean;
-  
+
   fetchRoutine: () => Promise<void>;
-  addProduct: (slotId: string, product: Product, timeOfDay: 'morning' | 'night') => Promise<void>;
+  addProduct: (slotId: string, product: Product, timeOfDay: 'morning' | 'night') => Promise<boolean>;
+  addProductToSlots: (product: Product, targets: RoutineSlotTarget[]) => Promise<boolean>;
   removeProduct: (slotId: string, timeOfDay: 'morning' | 'night') => Promise<void>;
   clearRoutine: () => Promise<void>;
 }
@@ -26,7 +32,7 @@ const getAuthToken = async (): Promise<string> => {
 
 export const useRoutineStore = create<RoutineState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       morning: {},
       night: {},
       isLoading: false,
@@ -40,7 +46,7 @@ export const useRoutineStore = create<RoutineState>()(
         try {
           const token = await getAuthToken();
           const res = await fetch(`${BACKEND_URL}/api/routine`, {
-            headers: { 'Authorization': `Bearer ${token}` },
+            headers: { Authorization: `Bearer ${token}` },
           });
 
           if (res.ok) {
@@ -50,7 +56,6 @@ export const useRoutineStore = create<RoutineState>()(
             const newMorning: Record<string, Product | null> = {};
             const newNight: Record<string, Product | null> = {};
 
-            // Mapping data database kembali ke format Record frontend
             routines.forEach((r: any) => {
               const timeKey = r.timeOfDay === 'PAGI' ? 'morning' : 'night';
               if (r.slotId && r.product) {
@@ -71,50 +76,90 @@ export const useRoutineStore = create<RoutineState>()(
         }
       },
 
-      // 2. Tambah produk (Simpan ke DB + Update State Lokal)
-      addProduct: async (slotId, product, timeOfDay) => {
+      // 2a. Tambah produk ke satu atau beberapa slot (Pagi / Malam / Keduanya)
+      addProductToSlots: async (product, targets) => {
+        if (targets.length === 0) return false;
+
         const user = auth.currentUser;
         if (!user) {
           toast.error('Silakan login terlebih dahulu untuk menyimpan rutinitas.');
-          return;
+          return false;
         }
-
-        // Cari step berdasarkan urutan slot di data
-        const slots = timeOfDay === 'morning' ? MORNING_SLOTS : NIGHT_SLOTS;
-        const step = slots.findIndex((s: RoutineSlot) => s.id === slotId) + 1;
 
         try {
           const token = await getAuthToken();
-          const res = await fetch(`${BACKEND_URL}/api/routine`, {
-            method: 'POST',
-            headers: { 
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}` 
-            },
-            body: JSON.stringify({ 
-              productId: product.id, 
-              slotId, 
-              timeOfDay: timeOfDay === 'morning' ? 'PAGI' : 'MALAM', 
-              step 
-            }),
-          });
-          
-          if (res.ok) {
-            // Optimistic update: update state lokal agar UI langsung responsif
-            set((state) => ({
-              [timeOfDay]: {
-                ...state[timeOfDay],
-                [slotId]: product,
-              }
-            }));
-            toast.success(`${product.name} ditambahkan ke ${timeOfDay === 'morning' ? 'Pagi' : 'Malam'}! ✨`);
-          } else {
-            throw new Error('Gagal menyimpan');
+          const succeeded: RoutineSlotTarget[] = [];
+
+          // Jalankan berurutan agar aman dari konflik transaksi database
+          for (const target of targets) {
+            const slots = target.timeOfDay === 'morning' ? MORNING_SLOTS : NIGHT_SLOTS;
+            const step = slots.findIndex((s: RoutineSlot) => s.id === target.slotId) + 1;
+
+            const res = await fetch(`${BACKEND_URL}/api/routine`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                productId: product.id,
+                slotId: target.slotId,
+                timeOfDay: target.timeOfDay === 'morning' ? 'PAGI' : 'MALAM',
+                step,
+              }),
+            });
+
+            if (res.ok) {
+              succeeded.push(target);
+            }
           }
+
+          if (succeeded.length === 0) {
+            throw new Error('Gagal menyimpan ke semua slot');
+          }
+
+          // Update state lokal sekaligus dalam 1 batch
+          set((state) => {
+            const nextMorning = { ...state.morning };
+            const nextNight = { ...state.night };
+
+            for (const item of succeeded) {
+              if (item.timeOfDay === 'morning') {
+                nextMorning[item.slotId] = product;
+              } else {
+                nextNight[item.slotId] = product;
+              }
+            }
+
+            return { morning: nextMorning, night: nextNight };
+          });
+
+          const savedMorning = succeeded.some((t) => t.timeOfDay === 'morning');
+          const savedNight = succeeded.some((t) => t.timeOfDay === 'night');
+          const timeLabel =
+            savedMorning && savedNight
+              ? 'Pagi & Malam'
+              : savedMorning
+                ? 'Pagi'
+                : 'Malam';
+
+          if (succeeded.length === targets.length) {
+            toast.success(`${product.name} ditambahkan ke ${timeLabel}! ✨`);
+          } else {
+            toast.success(`${product.name} baru tersimpan ke ${timeLabel}. Sebagian slot gagal disimpan.`);
+          }
+
+          return true;
         } catch (error) {
           console.error(error);
           toast.error('Gagal menambahkan ke rutinitas. Coba lagi.');
+          return false;
         }
+      },
+
+      // 2b. Tetap kompatibel dengan pemanggil single-slot (mis. ProductPickerModal)
+      addProduct: async (slotId, product, timeOfDay) => {
+        return get().addProductToSlots(product, [{ slotId, timeOfDay }]);
       },
 
       // 3. Hapus produk (Hapus di DB + Update State Lokal)
@@ -124,17 +169,20 @@ export const useRoutineStore = create<RoutineState>()(
 
         try {
           const token = await getAuthToken();
-          const res = await fetch(`${BACKEND_URL}/api/routine/${slotId}?timeOfDay=${timeOfDay === 'morning' ? 'PAGI' : 'MALAM'}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-          
+          const res = await fetch(
+            `${BACKEND_URL}/api/routine/${slotId}?timeOfDay=${timeOfDay === 'morning' ? 'PAGI' : 'MALAM'}`,
+            {
+              method: 'DELETE',
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+
           if (res.ok) {
             set((state) => ({
               [timeOfDay]: {
                 ...state[timeOfDay],
                 [slotId]: null,
-              }
+              },
             }));
             toast.success('Produk dihapus dari rutinitas.');
           } else {
@@ -146,7 +194,7 @@ export const useRoutineStore = create<RoutineState>()(
         }
       },
 
-      // 4. Reset semua (Hapus di DB + Reset State) -> PERBAIKAN BUG 3 & 4
+      // 4. Reset semua (Hapus di DB + Reset State)
       clearRoutine: async () => {
         const user = auth.currentUser;
         if (!user) {
@@ -156,15 +204,12 @@ export const useRoutineStore = create<RoutineState>()(
 
         try {
           const token = await getAuthToken();
-          
-          // Memanggil endpoint baru di backend untuk menghapus semua data user ini
           const res = await fetch(`${BACKEND_URL}/api/routine/clear`, {
             method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { Authorization: `Bearer ${token}` },
           });
-          
+
           if (res.ok) {
-            // Reset state lokal setelah backend berhasil menghapus
             set({ morning: {}, night: {} });
             toast.success('Semua rutinitas berhasil direset.');
           } else {
@@ -177,7 +222,7 @@ export const useRoutineStore = create<RoutineState>()(
       },
     }),
     {
-      name: 'dervora_routine', // Tetap simpan di local storage sebagai fallback offline
+      name: 'dervora_routine',
     }
   )
 );
