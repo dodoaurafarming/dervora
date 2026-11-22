@@ -83,7 +83,7 @@ export const LoginPage: React.FC = () => {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="dervora_admin"
+                placeholder="Masukkan username"
                 autoComplete="username"
                 className="w-full pl-11 pr-4 py-3 rounded-xl border border-dervora-beige bg-white focus:outline-none focus:ring-2 focus:ring-dervora-primary/50 font-body text-dervora-dark"
                 disabled={loading}

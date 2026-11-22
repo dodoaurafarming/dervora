@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 
@@ -42,6 +42,36 @@ const PublicLayout: React.FC = () => {
   );
 };
 
+// Otomatis memasang noindex pada seluruh rute admin (/dervora-control-9k2x/*)
+const AdminMetaWrapper: React.FC = () => {
+  useEffect(() => {
+    const existingMeta = document.querySelector<HTMLMetaElement>('meta[name="robots"]');
+    const previousContent = existingMeta?.getAttribute('content') ?? null;
+
+    let meta = existingMeta;
+    let created = false;
+
+    if (!meta) {
+      meta = document.createElement('meta');
+      meta.name = 'robots';
+      document.head.appendChild(meta);
+      created = true;
+    }
+
+    meta.content = 'noindex, nofollow, noarchive';
+
+    return () => {
+      if (created && meta?.parentNode) {
+        meta.parentNode.removeChild(meta);
+      } else if (meta && previousContent !== null) {
+        meta.content = previousContent;
+      }
+    };
+  }, []);
+
+  return <Outlet />;
+};
+
 export const App: React.FC = () => {
   return (
     <AuthProvider>
@@ -65,38 +95,38 @@ export const App: React.FC = () => {
             <Route path="/feedback" element={<FeedbackPage />} />
           </Route>
 
-          <Route
-            path="/dervora-control-9k2x"
-            element={<Navigate to="/dervora-control-9k2x/dashboard" replace />}
-          />
-          <Route path="/dervora-control-9k2x/login" element={<LoginPage />} />
-
-          <Route
-            path="/dervora-control-9k2x/dashboard"
-            element={
-              <AdminProtectedRoute>
-                <DashboardPage />
-              </AdminProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/dervora-control-9k2x/ingredients"
-            element={
-              <AdminProtectedRoute>
-                <AdminIngredientsPage />
-              </AdminProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/dervora-control-9k2x/catalog"
-            element={
-              <AdminProtectedRoute>
-                <AdminCatalogPage />
-              </AdminProtectedRoute>
-            }
-          />
+          {/* Semua halaman admin berada dalam AdminMetaWrapper */}
+          <Route path="/dervora-control-9k2x" element={<AdminMetaWrapper />}>
+            <Route
+              index
+              element={<Navigate to="/dervora-control-9k2x/dashboard" replace />}
+            />
+            <Route path="login" element={<LoginPage />} />
+            <Route
+              path="dashboard"
+              element={
+                <AdminProtectedRoute>
+                  <DashboardPage />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="ingredients"
+              element={
+                <AdminProtectedRoute>
+                  <AdminIngredientsPage />
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="catalog"
+              element={
+                <AdminProtectedRoute>
+                  <AdminCatalogPage />
+                </AdminProtectedRoute>
+              }
+            />
+          </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
