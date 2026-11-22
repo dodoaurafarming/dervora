@@ -1,12 +1,19 @@
+export type SkinDimension =
+  | 'dry'
+  | 'oily'
+  | 'dehydrated'
+  | 'acne'
+  | 'sensitive'
+  | 'pigmentation';
+
+export type QuizScoreVector = Partial<Record<SkinDimension, number>>;
+
 export interface QuizOption {
   value: string;
   label: string;
-  score?: {
-    dry?: number;
-    oily?: number;
-    acne?: number;
-    sensitive?: number;
-  };
+  score?: QuizScoreVector;
+  zonePattern?: 'none' | 'tzone' | 'full';
+  acneSubType?: 'none' | 'comedonal' | 'inflammatory' | 'mixed';
 }
 
 export interface QuizQuestion {
@@ -18,7 +25,6 @@ export interface QuizQuestion {
   allowOther?: boolean;
 }
 
-// ==================== A. SKIN TYPE (Q1-Q7) ====================
 const SKIN_TYPE_QUESTIONS: QuizQuestion[] = [
   {
     id: 'q1',
@@ -26,11 +32,11 @@ const SKIN_TYPE_QUESTIONS: QuizQuestion[] = [
     question: 'Setelah mencuci wajah dan tidak menggunakan skincare selama 2–3 jam, bagaimana kondisi kulitmu?',
     type: 'single',
     options: [
-      { value: 'very-dry', label: 'Sangat kering dan terasa tertarik', score: { dry: 3 } },
+      { value: 'very-dry', label: 'Sangat kering dan terasa tertarik', score: { dry: 3, dehydrated: 1 } },
       { value: 'dry', label: 'Terasa agak kering', score: { dry: 2 } },
       { value: 'normal', label: 'Terasa nyaman/normal', score: {} },
-      { value: 'oily-some', label: 'Mulai berminyak di beberapa area', score: { oily: 2 } },
-      { value: 'oily-all', label: 'Berminyak di hampir seluruh wajah', score: { oily: 3 } },
+      { value: 'oily-some', label: 'Mulai berminyak di beberapa area', score: { oily: 2 }, zonePattern: 'tzone' },
+      { value: 'oily-all', label: 'Berminyak di hampir seluruh wajah', score: { oily: 3 }, zonePattern: 'full' },
     ],
   },
   {
@@ -42,8 +48,8 @@ const SKIN_TYPE_QUESTIONS: QuizQuestion[] = [
       { value: 'very-dry', label: 'Sangat kering', score: { dry: 3 } },
       { value: 'dry', label: 'Kering di beberapa bagian', score: { dry: 2 } },
       { value: 'normal', label: 'Normal dan nyaman', score: {} },
-      { value: 'oily-tzone', label: 'Berminyak di T-zone', score: { oily: 2 } },
-      { value: 'oily-all', label: 'Berminyak hampir di seluruh wajah', score: { oily: 3 } },
+      { value: 'oily-tzone', label: 'Berminyak di T-zone', score: { oily: 2 }, zonePattern: 'tzone' },
+      { value: 'oily-all', label: 'Berminyak hampir di seluruh wajah', score: { oily: 3 }, zonePattern: 'full' },
     ],
   },
   {
@@ -52,11 +58,11 @@ const SKIN_TYPE_QUESTIONS: QuizQuestion[] = [
     question: 'Setelah mencuci wajah, seberapa sering kulitmu terasa kencang atau tertarik?',
     type: 'single',
     options: [
-      { value: 'always', label: 'Selalu', score: { dry: 3 } },
-      { value: 'often', label: 'Sering', score: { dry: 2 } },
+      { value: 'always', label: 'Selalu', score: { dry: 3, dehydrated: 2 } },
+      { value: 'often', label: 'Sering', score: { dry: 2, dehydrated: 1 } },
       { value: 'sometimes', label: 'Kadang-kadang', score: { dry: 1 } },
       { value: 'rarely', label: 'Jarang', score: {} },
-      { value: 'never', label: 'Tidak pernah', score: { oily: 1 } },
+      { value: 'never', label: 'Tidak pernah', score: {} },
     ],
   },
   {
@@ -78,11 +84,11 @@ const SKIN_TYPE_QUESTIONS: QuizQuestion[] = [
     question: 'Bagian wajah mana yang paling sering terlihat berminyak?',
     type: 'single',
     options: [
-      { value: 'none', label: 'Tidak ada', score: { dry: 2 } },
-      { value: 'nose', label: 'Hanya hidung atau dahi', score: { oily: 1 } },
-      { value: 'tzone', label: 'Dahi dan hidung (T-zone)', score: { oily: 2 } },
-      { value: 'tzone-chin', label: 'Dahi, hidung, dan dagu', score: { oily: 2 } },
-      { value: 'all', label: 'Hampir seluruh wajah', score: { oily: 3 } },
+      { value: 'none', label: 'Tidak ada', score: { dry: 2 }, zonePattern: 'none' },
+      { value: 'nose', label: 'Hanya hidung atau dahi', score: { oily: 1 }, zonePattern: 'tzone' },
+      { value: 'tzone', label: 'Dahi dan hidung (T-zone)', score: { oily: 2 }, zonePattern: 'tzone' },
+      { value: 'tzone-chin', label: 'Dahi, hidung, dan dagu', score: { oily: 2 }, zonePattern: 'tzone' },
+      { value: 'all', label: 'Hampir seluruh wajah', score: { oily: 3 }, zonePattern: 'full' },
     ],
   },
   {
@@ -95,7 +101,7 @@ const SKIN_TYPE_QUESTIONS: QuizQuestion[] = [
       { value: 'rarely', label: 'Sesekali', score: { oily: 1 } },
       { value: 'once', label: 'Sekali sehari', score: {} },
       { value: 'twice', label: 'Dua kali sehari', score: { dry: 2 } },
-      { value: 'more', label: 'Lebih dari dua kali sehari', score: { dry: 3 } },
+      { value: 'more', label: 'Lebih dari dua kali sehari', score: { dry: 3, dehydrated: 1 } },
     ],
   },
   {
@@ -104,16 +110,15 @@ const SKIN_TYPE_QUESTIONS: QuizQuestion[] = [
     question: 'Jika tidak menggunakan moisturizer setelah mencuci wajah, apa yang biasanya terjadi?',
     type: 'single',
     options: [
-      { value: 'nothing', label: 'Tidak ada perubahan', score: { oily: 1 } },
+      { value: 'nothing', label: 'Tidak ada perubahan', score: {} },
       { value: 'slightly-dry', label: 'Kulit sedikit kering', score: { dry: 1 } },
-      { value: 'tight', label: 'Kulit terasa kencang/tertarik', score: { dry: 2 } },
-      { value: 'dry-rough', label: 'Kulit menjadi kering atau kasar', score: { dry: 2 } },
-      { value: 'very-uncomfortable', label: 'Kulit terasa sangat tidak nyaman', score: { dry: 3 } },
+      { value: 'tight', label: 'Kulit terasa kencang/tertarik', score: { dry: 2, dehydrated: 2 } },
+      { value: 'dry-rough', label: 'Kulit menjadi kering atau kasar', score: { dry: 3, dehydrated: 2 } },
+      { value: 'very-uncomfortable', label: 'Kulit terasa sangat tidak nyaman', score: { dry: 3, dehydrated: 3 } },
     ],
   },
 ];
 
-// ==================== B. ACNE (Q8-Q12) ====================
 const ACNE_QUESTIONS: QuizQuestion[] = [
   {
     id: 'q8',
@@ -173,17 +178,16 @@ const ACNE_QUESTIONS: QuizQuestion[] = [
     question: 'Jenis jerawat atau masalah acne apa yang paling sering kamu alami?',
     type: 'single',
     options: [
-      { value: 'none', label: 'Tidak mengalami jerawat', score: { acne: 0 } },
-      { value: 'whiteheads', label: 'Komedo/whiteheads', score: { acne: 1 } },
-      { value: 'blackheads', label: 'Blackheads', score: { acne: 1 } },
-      { value: 'small-red', label: 'Jerawat kecil dan kemerahan', score: { acne: 2 } },
-      { value: 'inflamed', label: 'Jerawat bernanah atau meradang', score: { acne: 3 } },
-      { value: 'multiple', label: 'Beberapa jenis sekaligus', score: { acne: 4 } },
+      { value: 'none', label: 'Tidak mengalami jerawat', score: { acne: 0 }, acneSubType: 'none' },
+      { value: 'whiteheads', label: 'Komedo/whiteheads', score: { acne: 1 }, acneSubType: 'comedonal' },
+      { value: 'blackheads', label: 'Blackheads', score: { acne: 1 }, acneSubType: 'comedonal' },
+      { value: 'small-red', label: 'Jerawat kecil dan kemerahan', score: { acne: 2, sensitive: 1 }, acneSubType: 'inflammatory' },
+      { value: 'inflamed', label: 'Jerawat bernanah atau meradang', score: { acne: 4, sensitive: 1 }, acneSubType: 'inflammatory' },
+      { value: 'multiple', label: 'Beberapa jenis sekaligus', score: { acne: 4, sensitive: 1 }, acneSubType: 'mixed' },
     ],
   },
 ];
 
-// ==================== C. SENSITIVE (Q13-Q17) ====================
 const SENSITIVE_QUESTIONS: QuizQuestion[] = [
   {
     id: 'q13',
@@ -206,9 +210,9 @@ const SENSITIVE_QUESTIONS: QuizQuestion[] = [
     options: [
       { value: 'never', label: 'Tidak pernah', score: { sensitive: 0 } },
       { value: 'rarely', label: 'Jarang', score: { sensitive: 1 } },
-      { value: 'sometimes', label: 'Kadang-kadang', score: { sensitive: 2 } },
-      { value: 'often', label: 'Sering', score: { sensitive: 3 } },
-      { value: 'almost-always', label: 'Hampir setiap kali', score: { sensitive: 4 } },
+      { value: 'sometimes', label: 'Kadang-kadang', score: { sensitive: 2, dehydrated: 1 } },
+      { value: 'often', label: 'Sering', score: { sensitive: 3, dehydrated: 2 } },
+      { value: 'almost-always', label: 'Hampir setiap kali', score: { sensitive: 4, dehydrated: 3 } },
     ],
   },
   {
@@ -220,8 +224,8 @@ const SENSITIVE_QUESTIONS: QuizQuestion[] = [
       { value: 'never', label: 'Tidak pernah', score: { sensitive: 0 } },
       { value: 'once', label: 'Pernah satu kali', score: { sensitive: 1 } },
       { value: 'few', label: 'Pernah beberapa kali', score: { sensitive: 2 } },
-      { value: 'often', label: 'Sering', score: { sensitive: 3 } },
-      { value: 'almost-always', label: 'Hampir setiap menggunakan produk tertentu', score: { sensitive: 4 } },
+      { value: 'often', label: 'Sering', score: { sensitive: 3, dehydrated: 1 } },
+      { value: 'almost-always', label: 'Hampir setiap menggunakan produk tertentu', score: { sensitive: 4, dehydrated: 2 } },
     ],
   },
   {
@@ -233,7 +237,7 @@ const SENSITIVE_QUESTIONS: QuizQuestion[] = [
       { value: 'none', label: 'Tidak ada', score: { sensitive: 0 } },
       { value: 'one', label: 'Ada 1 produk', score: { sensitive: 1 } },
       { value: 'few', label: 'Ada beberapa produk', score: { sensitive: 2 } },
-      { value: 'many', label: 'Banyak produk menyebabkan reaksi', score: { sensitive: 3 } },
+      { value: 'many', label: 'Banyak produk menyebabkan reaksi', score: { sensitive: 4 } },
       { value: 'unsure', label: 'Tidak yakin produk mana yang menyebabkan reaksi', score: { sensitive: 1 } },
     ],
   },
@@ -252,7 +256,6 @@ const SENSITIVE_QUESTIONS: QuizQuestion[] = [
   },
 ];
 
-// ==================== D. CONCERNS (Q18-Q20) ====================
 const CONCERNS_QUESTIONS: QuizQuestion[] = [
   {
     id: 'q18',
@@ -260,11 +263,11 @@ const CONCERNS_QUESTIONS: QuizQuestion[] = [
     question: 'Apakah kulitmu sering terasa kasar, bersisik, atau mengalami pengelupasan?',
     type: 'single',
     options: [
-      { value: 'never', label: 'Tidak pernah', score: {} },
-      { value: 'rarely', label: 'Jarang', score: {} },
-      { value: 'sometimes', label: 'Kadang-kadang', score: {} },
-      { value: 'often', label: 'Sering', score: {} },
-      { value: 'very-often', label: 'Sangat sering', score: {} },
+      { value: 'never', label: 'Tidak pernah', score: { dehydrated: 0 } },
+      { value: 'rarely', label: 'Jarang', score: { dehydrated: 1 } },
+      { value: 'sometimes', label: 'Kadang-kadang', score: { dehydrated: 2, dry: 1 } },
+      { value: 'often', label: 'Sering', score: { dehydrated: 3, dry: 2 } },
+      { value: 'very-often', label: 'Sangat sering', score: { dehydrated: 4, dry: 2 } },
     ],
   },
   {
@@ -273,11 +276,11 @@ const CONCERNS_QUESTIONS: QuizQuestion[] = [
     question: 'Apakah kamu memiliki masalah warna kulit yang tidak merata, bekas jerawat, atau dark spots yang ingin diperbaiki?',
     type: 'single',
     options: [
-      { value: 'none', label: 'Tidak ada', score: {} },
-      { value: 'little', label: 'Ada sedikit', score: {} },
-      { value: 'some', label: 'Ada beberapa', score: {} },
-      { value: 'many', label: 'Cukup banyak', score: {} },
-      { value: 'very-many', label: 'Sangat banyak dan menjadi masalah utama', score: {} },
+      { value: 'none', label: 'Tidak ada', score: { pigmentation: 0 } },
+      { value: 'little', label: 'Ada sedikit', score: { pigmentation: 1 } },
+      { value: 'some', label: 'Ada beberapa', score: { pigmentation: 2 } },
+      { value: 'many', label: 'Cukup banyak', score: { pigmentation: 3 } },
+      { value: 'very-many', label: 'Sangat banyak dan menjadi masalah utama', score: { pigmentation: 4 } },
     ],
   },
   {
@@ -302,7 +305,6 @@ const CONCERNS_QUESTIONS: QuizQuestion[] = [
   },
 ];
 
-// ==================== ALL QUESTIONS ====================
 export const ALL_QUESTIONS: QuizQuestion[] = [
   ...SKIN_TYPE_QUESTIONS,
   ...ACNE_QUESTIONS,
@@ -312,7 +314,6 @@ export const ALL_QUESTIONS: QuizQuestion[] = [
 
 export const TOTAL_QUESTIONS = ALL_QUESTIONS.length;
 
-// ==================== CATEGORY LABELS ====================
 export const CATEGORY_LABELS: Record<QuizQuestion['category'], string> = {
   'skin-type': 'Kondisi Kulit',
   'acne': 'Kecenderungan Acne',
