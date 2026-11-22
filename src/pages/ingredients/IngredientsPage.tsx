@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Sparkles } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Search, Sparkles, Filter } from 'lucide-react';
 import { useIngredientCatalog } from '../../hooks/useIngredients';
 import { IngredientCard } from '../../components/ingredient/IngredientCard';
 import { IngredientCardSkeleton } from '../../components/ingredient/IngredientCardSkeleton';
 import { FadeIn } from '../../components/ui/FadeIn';
 import { Button } from '../../components/ui/Button';
+import { CustomDropdown, type DropdownOption } from '../../components/ui/CustomDropdown';
 
-const ITEMS_PER_PAGE = 24; // Jumlah yang muncul pertama kali dan saat load more
+const ITEMS_PER_PAGE = 24;
 
 export const IngredientsPage: React.FC = () => {
   const {
@@ -22,15 +23,20 @@ export const IngredientsPage: React.FC = () => {
     refetch,
   } = useIngredientCatalog();
 
-  // State untuk Load More
   const [visibleCount, setVisibleCount] = useState(ITEMS_PER_PAGE);
 
-  // Reset visibleCount ke awal setiap kali search atau filter berubah
   useEffect(() => {
     setVisibleCount(ITEMS_PER_PAGE);
   }, [searchQuery, categoryFilter]);
 
-  // Potong data catalog sesuai visibleCount
+  const categoryOptions = useMemo<DropdownOption<string>[]>(
+    () => [
+      { value: 'all', label: 'Semua Kategori' },
+      ...categories.map((cat) => ({ value: cat, label: cat })),
+    ],
+    [categories]
+  );
+
   const displayedCatalog = catalog.slice(0, visibleCount);
 
   return (
@@ -49,8 +55,7 @@ export const IngredientsPage: React.FC = () => {
           </p>
         </header>
 
-        {/* Search & Filter */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
+        <div className="flex flex-col md:flex-row md:items-center gap-4 mb-8">
           <div className="relative flex-grow">
             <Search
               size={20}
@@ -64,19 +69,17 @@ export const IngredientsPage: React.FC = () => {
               className="w-full pl-12 pr-4 py-3 rounded-full border border-dervora-beige bg-white focus:outline-none focus:ring-2 focus:ring-dervora-primary/50 font-body text-dervora-dark"
             />
           </div>
-          
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-3 rounded-full border border-dervora-beige bg-white focus:outline-none focus:ring-2 focus:ring-dervora-primary/50 font-body text-sm text-dervora-dark cursor-pointer min-w-[180px]"
-          >
-            <option value="all">Semua Kategori</option>
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
-              </option>
-            ))}
-          </select>
+
+          <div className="flex-shrink-0">
+            <CustomDropdown
+              value={categoryFilter}
+              options={categoryOptions}
+              onChange={setCategoryFilter}
+              defaultIcon={Filter}
+              align="right"
+              buttonClassName="w-full md:w-auto min-w-[200px] py-3"
+            />
+          </div>
         </div>
 
         {loading && (
@@ -118,7 +121,6 @@ export const IngredientsPage: React.FC = () => {
               </p>
             </div>
 
-            {/* GRID DIUBAH MENJADI 1 KOLOM DI MOBILE */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5 auto-rows-fr mb-8">
               {displayedCatalog.map((catalogItem, index) => (
                 <FadeIn key={catalogItem.id} delay={index * 0.05} className="h-full">
@@ -127,13 +129,12 @@ export const IngredientsPage: React.FC = () => {
               ))}
             </div>
 
-            {/* Tombol Load More */}
             {visibleCount < catalog.length && (
               <div className="flex justify-center mt-10">
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  onClick={() => setVisibleCount(prev => prev + ITEMS_PER_PAGE)}
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setVisibleCount((prev) => prev + ITEMS_PER_PAGE)}
                   className="px-8"
                 >
                   Tampilkan Lebih Banyak

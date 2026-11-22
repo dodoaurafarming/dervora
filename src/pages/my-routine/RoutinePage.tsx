@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Sun, Moon, Trash2 } from 'lucide-react';
-import toast from 'react-hot-toast';
 import { useRoutineStore } from '../../store/routineStore';
+import { useAuth } from '../../context/AuthContext';
 import { MORNING_SLOTS, NIGHT_SLOTS, type RoutineSlot } from '../../data/routineSlots';
 import { RoutineCard } from '../../components/routine/RoutineCard';
 import { EmptySlot } from '../../components/routine/EmptySlot';
@@ -13,15 +14,30 @@ import type { Product } from '../../lib/api';
 type TimeOfDay = 'morning' | 'night';
 
 export const RoutinePage: React.FC = () => {
-  const { morning, night, addProduct, removeProduct, clearRoutine } = useRoutineStore();
+  const { 
+    morning, 
+    night, 
+    isLoading, 
+    fetchRoutine, 
+    addProduct, 
+    removeProduct, 
+    clearRoutine 
+  } = useRoutineStore();
+  
+  const { user } = useAuth();
 
   // Modal state
   const [pickerOpen, setPickerOpen] = useState(false);
   const [activeSlot, setActiveSlot] = useState<RoutineSlot | null>(null);
   const [activeTimeOfDay, setActiveTimeOfDay] = useState<TimeOfDay>('morning');
-
-  // Confirm clear
   const [confirmClear, setConfirmClear] = useState(false);
+
+  // 🚀 PENTING: Ambil data dari database setiap kali halaman dibuka atau user baru login
+  useEffect(() => {
+    if (user) {
+      fetchRoutine();
+    }
+  }, [user, fetchRoutine]);
 
   const handleAddClick = (slot: RoutineSlot, timeOfDay: TimeOfDay) => {
     setActiveSlot(slot);
@@ -32,18 +48,16 @@ export const RoutinePage: React.FC = () => {
   const handleSelectProduct = (product: Product) => {
     if (!activeSlot) return;
     addProduct(activeSlot.id, product, activeTimeOfDay);
-    toast.success(`${product.name} ditambahkan ke ${activeTimeOfDay === 'morning' ? 'Pagi' : 'Malam'}!`);
+    setPickerOpen(false);
   };
 
-  const handleRemove = (slotId: string, timeOfDay: TimeOfDay, productName: string) => {
+  const handleRemove = (slotId: string, timeOfDay: TimeOfDay) => {
     removeProduct(slotId, timeOfDay);
-    toast.success(`${productName} dihapus dari rutinitas.`);
   };
 
   const handleClearRoutine = () => {
     clearRoutine();
     setConfirmClear(false);
-    toast.success('Rutinitas direset.');
   };
 
   // Calculate total products
@@ -59,7 +73,7 @@ export const RoutinePage: React.FC = () => {
         <RoutineCard
           key={slot.id}
           product={product}
-          onRemove={() => handleRemove(slot.id, timeOfDay, product.name)}
+          onRemove={() => handleRemove(slot.id, timeOfDay)}
         />
       );
     }
@@ -74,6 +88,35 @@ export const RoutinePage: React.FC = () => {
       />
     );
   };
+
+  // Tampilan Loading
+  if (isLoading && user) {
+    return (
+      <div className="min-h-screen bg-dervora-cream flex items-center justify-center">
+        <p className="font-body text-dervora-dark/60 animate-pulse">Memuat rutinitas Anda...</p>
+      </div>
+    );
+  }
+
+  // Tampilan Belum Login (BUG 2 FIXED DI SINI)
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-dervora-cream px-6 py-20 text-center flex flex-col items-center justify-center">
+        <h2 className="font-heading text-2xl font-bold text-dervora-primary mb-2">Akses Terbatas</h2>
+        <p className="font-body text-dervora-dark/60 mb-6">
+          Silakan login untuk melihat dan mengelola rutinitas skincare Anda.
+        </p>
+        
+        {/* PERBAIKAN: Menggunakan <Link> dari react-router-dom, BUKAN <a href="..."> */}
+        <Link
+          to="/profile"
+          className="px-6 py-3 bg-dervora-primary text-dervora-cream rounded-full font-heading font-semibold hover:bg-dervora-primary-dark transition-all inline-block"
+        >
+          Masuk ke Akun
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <section className="w-full bg-dervora-cream pt-6 md:pt-8 pb-12 md:pb-16 px-6 md:px-12 lg:px-20">
@@ -117,15 +160,12 @@ export const RoutinePage: React.FC = () => {
                   <Sun size={20} className="text-dervora-primary" />
                 </div>
                 <div>
-                  <h2 className="font-heading text-2xl font-bold text-dervora-primary">
-                    Pagi
-                  </h2>
+                  <h2 className="font-heading text-2xl font-bold text-dervora-primary">Pagi</h2>
                   <p className="font-body text-xs text-dervora-dark/60">
                     {totalMorning} dari {MORNING_SLOTS.length} slot terisi
                   </p>
                 </div>
               </div>
-
               <div className="space-y-3">
                 {MORNING_SLOTS.map((slot) => renderSlot(slot, 'morning'))}
               </div>
@@ -140,15 +180,12 @@ export const RoutinePage: React.FC = () => {
                   <Moon size={20} className="text-dervora-primary" />
                 </div>
                 <div>
-                  <h2 className="font-heading text-2xl font-bold text-dervora-primary">
-                    Malam
-                  </h2>
+                  <h2 className="font-heading text-2xl font-bold text-dervora-primary">Malam</h2>
                   <p className="font-body text-xs text-dervora-dark/60">
                     {totalNight} dari {NIGHT_SLOTS.length} slot terisi
                   </p>
                 </div>
               </div>
-
               <div className="space-y-3">
                 {NIGHT_SLOTS.map((slot) => renderSlot(slot, 'night'))}
               </div>

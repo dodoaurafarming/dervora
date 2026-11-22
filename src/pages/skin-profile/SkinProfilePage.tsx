@@ -12,7 +12,6 @@ export const SkinProfilePage: React.FC = () => {
 
   const profile = useMemo(() => calculateSkinProfile(answers), [answers]);
 
-  // Kalau quiz belum selesai, redirect ke quiz
   if (!completed) {
     return (
       <div className="min-h-screen bg-dervora-cream flex flex-col items-center justify-center px-6 py-16">
@@ -40,7 +39,6 @@ export const SkinProfilePage: React.FC = () => {
   return (
     <section className="w-full min-h-screen bg-dervora-cream py-12 md:py-16 px-6 md:px-12 lg:px-20">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <FadeIn>
           <div className="text-center mb-10 md:mb-14">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-dervora-primary/10 rounded-full mb-4">
@@ -58,11 +56,9 @@ export const SkinProfilePage: React.FC = () => {
           </div>
         </FadeIn>
 
-        {/* Main Card - Skin Type */}
         <FadeIn delay={0.1}>
           <div className="bg-white rounded-3xl border border-dervora-beige shadow-sm p-6 md:p-10 mb-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* Skin Type */}
               <div className="text-center">
                 <div className="w-20 h-20 mx-auto rounded-full bg-dervora-primary/10 flex items-center justify-center mb-4">
                   <Droplet size={36} className="text-dervora-primary" />
@@ -78,7 +74,6 @@ export const SkinProfilePage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Acne-Prone */}
               <div className="text-center md:border-x border-dervora-beige">
                 <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 ${profile.isAcneProne ? 'bg-red-100' : 'bg-dervora-primary/10'}`}>
                   {profile.isAcneProne ? (
@@ -98,7 +93,6 @@ export const SkinProfilePage: React.FC = () => {
                 </p>
               </div>
 
-              {/* Sensitive */}
               <div className="text-center">
                 <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-4 ${profile.isSensitive ? 'bg-amber-100' : 'bg-dervora-primary/10'}`}>
                   {profile.isSensitive ? (
@@ -119,7 +113,6 @@ export const SkinProfilePage: React.FC = () => {
               </div>
             </div>
 
-            {/* Dehydrated + Dark Spots Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 pt-8 border-t border-dervora-beige">
               <div className="flex items-center gap-3 p-4 rounded-2xl bg-dervora-cream/30">
                 <div className="w-10 h-10 rounded-full bg-dervora-primary/10 flex items-center justify-center flex-shrink-0">
@@ -148,7 +141,6 @@ export const SkinProfilePage: React.FC = () => {
           </div>
         </FadeIn>
 
-        {/* Concerns */}
         {profile.concerns.length > 0 && (
           <FadeIn delay={0.2}>
             <div className="bg-white rounded-3xl border border-dervora-beige shadow-sm p-6 md:p-8 mb-6">
@@ -169,10 +161,9 @@ export const SkinProfilePage: React.FC = () => {
           </FadeIn>
         )}
 
-        {/* CTA (Fixed Mobile) */}
         <FadeIn delay={0.3}>
           <div className="flex flex-col md:flex-row items-center justify-between gap-6 mt-8 p-6 md:p-8 bg-dervora-primary/5 rounded-3xl border border-dashed border-dervora-primary/20">
-            <div className="w-full md:w-auto text-center md:text-left">
+            <div className="w-full md:w-auto min-w-0 text-center md:text-left">
               <h3 className="font-heading text-2xl font-bold text-dervora-primary mb-1">
                 Siap lihat rekomendasi produk?
               </h3>
@@ -180,18 +171,24 @@ export const SkinProfilePage: React.FC = () => {
                 Kami sudah menyiapkan produk yang cocok dengan profil kulitmu.
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-              <button
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full md:w-auto flex-shrink-0">
+              <Button
+                variant="outline"
+                size="lg"
                 onClick={handleRetake}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-white border border-dervora-beige text-dervora-dark font-body text-sm hover:border-dervora-primary transition-colors"
+                className="w-full sm:w-auto whitespace-nowrap inline-flex items-center justify-center gap-2 bg-white"
               >
-                <RotateCcw size={14} />
+                <RotateCcw size={16} />
                 Ulangi Quiz
-              </button>
-              <Link to="/matches" className="w-full sm:w-auto">
-                <Button variant="primary" size="lg" className="w-full whitespace-nowrap justify-center">
+              </Button>
+              <Link to="/matches" className="w-full sm:w-auto flex-shrink-0">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="w-full sm:w-auto whitespace-nowrap inline-flex items-center justify-center gap-2"
+                >
                   Lihat Rekomendasi
-                  <ArrowRight size={16} className="inline ml-2" />
+                  <ArrowRight size={16} />
                 </Button>
               </Link>
             </div>

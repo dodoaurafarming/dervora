@@ -73,8 +73,8 @@ export const SettingsPage: React.FC = () => {
             <div>
               <h3 className="font-body font-semibold text-gray-700">Privasi Anda Terjamin</h3>
               <p className="font-body text-sm text-gray-500 mt-1 leading-relaxed">
-                Dervora menyimpan data rutinitas dan hasil quiz Anda secara lokal di browser (Local Storage). Kami tidak mengirim data ini ke server manapun tanpa izin Anda.
-              </p>
+  Dervora menjaga privasi Anda. Data Skin Profile dan Rutinitas tersimpan aman di akun Anda. Anda dapat menghapus data ini kapan saja melalui halaman ini.
+</p>
             </div>
           </div>
         </div>

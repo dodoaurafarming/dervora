@@ -1,6 +1,14 @@
-import React, { useState, useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { Sparkles, AlertCircle, Filter, Search } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  Sparkles,
+  AlertCircle,
+  Search,
+  LogIn,
+  TrendingDown,
+  TrendingUp,
+  Star,
+} from 'lucide-react';
 import { useQuizStore } from '../../store/quizStore';
 import { useProducts } from '../../hooks/useProducts';
 import { calculateSkinProfile } from '../../utils/quizScoring';
@@ -9,29 +17,35 @@ import { MatchCard } from '../../components/match/MatchCard';
 import { ProductCardSkeleton } from '../../components/ui/ProductCardSkeleton';
 import { Button } from '../../components/ui/Button';
 import { FadeIn } from '../../components/ui/FadeIn';
+import { CustomDropdown, type DropdownOption } from '../../components/ui/CustomDropdown';
 import { useDebounce } from '../../hooks/useDebounce';
+import { useAuth } from '../../context/AuthContext';
 
 const CATEGORIES = ['Semua', 'Cleanser', 'Toner', 'Serum', 'Moisturizer', 'Sunscreen'];
 
 type SortOption = 'match' | 'price-low' | 'price-high' | 'rating';
 
+const MATCH_SORT_OPTIONS: DropdownOption<SortOption>[] = [
+  { value: 'match', label: 'Match Tertinggi', icon: Sparkles },
+  { value: 'price-low', label: 'Harga Terendah', icon: TrendingDown },
+  { value: 'price-high', label: 'Harga Tertinggi', icon: TrendingUp },
+  { value: 'rating', label: 'Rating Tertinggi', icon: Star },
+];
+
 export const ProductMatchesPage: React.FC = () => {
   const { answers, completed } = useQuizStore();
-  // Naikkan limit fetch dari API agar semua produk terambil (maksimal 500 di backend)
   const { products, loading, error } = useProducts({ page: 1, limit: 500 });
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [categoryFilter, setCategoryFilter] = useState('Semua');
   const [sortBy, setSortBy] = useState<SortOption>('match');
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
-
-  // State untuk "Load More"
   const [visibleCount, setVisibleCount] = useState(24);
 
-  // Hitung skin profile dari answers
   const profile = useMemo(() => calculateSkinProfile(answers), [answers]);
 
-  // Hitung match score untuk setiap produk
   const matchedProducts = useMemo(() => {
     if (!products.length) return [];
 
@@ -40,7 +54,6 @@ export const ProductMatchesPage: React.FC = () => {
       match: calculateMatchScore(product, profile),
     }));
 
-    // Filter by category
     let filtered = withScore;
     if (categoryFilter !== 'Semua') {
       filtered = filtered.filter(
@@ -48,7 +61,6 @@ export const ProductMatchesPage: React.FC = () => {
       );
     }
 
-    // Filter by search
     if (debouncedSearch) {
       const q = debouncedSearch.toLowerCase();
       filtered = filtered.filter(
@@ -58,7 +70,6 @@ export const ProductMatchesPage: React.FC = () => {
       );
     }
 
-    // Sort
     filtered.sort((a, b) => {
       if (sortBy === 'match') return b.match.score - a.match.score;
       if (sortBy === 'price-low') return (a.product.price || 0) - (b.product.price || 0);
@@ -67,18 +78,56 @@ export const ProductMatchesPage: React.FC = () => {
       return 0;
     });
 
-    return filtered; // KEMBALIKAN SEMUA HASIL (TANPA SLICE)
+    return filtered;
   }, [products, profile, categoryFilter, sortBy, debouncedSearch]);
 
-  // Ambil produk yang akan ditampilkan berdasarkan visibleCount
   const displayedProducts = matchedProducts.slice(0, visibleCount);
 
-  // Reset visibleCount jika filter berubah
-  React.useEffect(() => {
+  useEffect(() => {
     setVisibleCount(24);
   }, [categoryFilter, sortBy, debouncedSearch]);
 
-  // Kalau belum quiz, redirect ke quiz
+  if (!user) {
+    return (
+      <section className="w-full min-h-screen bg-dervora-cream flex items-center justify-center px-6 py-16">
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-xl border border-dervora-beige p-8 md:p-10">
+          <div className="flex justify-center mb-5">
+            <div className="w-16 h-16 rounded-full bg-dervora-primary/10 flex items-center justify-center border border-dervora-primary/20">
+              <LogIn size={30} className="text-dervora-primary" />
+            </div>
+          </div>
+
+          <h1 className="font-heading text-2xl md:text-3xl font-bold text-dervora-primary text-center mb-2">
+            Yuk, Login Dulu ♡
+          </h1>
+
+          <p className="font-body text-dervora-dark/70 text-center text-sm md:text-base leading-relaxed mb-2">
+            Masuk ke akun Dervora terlebih dahulu untuk melihat rekomendasi produk yang cocok dengan profil kulitmu.
+          </p>
+          <p className="font-body text-dervora-dark/50 text-center text-xs md:text-sm leading-relaxed mb-8">
+            Hasil analisis kulit dan kecocokan produk akan tersimpan khusus di akunmu.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={() => navigate('/')}
+              className="flex-1 px-5 py-3 rounded-full font-heading font-semibold text-dervora-dark bg-white border border-dervora-beige hover:border-dervora-primary hover:text-dervora-primary transition-all duration-300"
+            >
+              Kembali
+            </button>
+            <button
+              onClick={() => navigate('/profile')}
+              className="flex-1 px-5 py-3 rounded-full font-heading font-semibold text-white bg-dervora-primary hover:bg-dervora-primary-dark shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+            >
+              <LogIn size={18} />
+              Masuk Sekarang
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   if (!completed) {
     return (
       <section className="w-full min-h-screen bg-dervora-cream flex items-center justify-center px-6 py-16">
@@ -90,12 +139,10 @@ export const ProductMatchesPage: React.FC = () => {
           <p className="font-body text-base text-dervora-dark/70 mb-8">
             Selesaikan quiz terlebih dahulu untuk melihat rekomendasi produk yang cocok dengan kulitmu.
           </p>
-          <Link to="/quiz">
-            <Button variant="primary" size="lg">
-              Mulai Quiz
-              <Sparkles size={16} className="inline ml-2" />
-            </Button>
-          </Link>
+          <Button variant="primary" size="lg" onClick={() => navigate('/quiz')}>
+            Mulai Quiz
+            <Sparkles size={16} className="inline ml-2" />
+          </Button>
         </div>
       </section>
     );
@@ -104,7 +151,6 @@ export const ProductMatchesPage: React.FC = () => {
   return (
     <section className="w-full min-h-screen bg-dervora-cream pt-6 md:pt-8 pb-12 md:pb-16 px-6 md:px-12 lg:px-20">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
         <FadeIn>
           <header className="mb-8 md:mb-10">
             <div className="w-12 h-[2px] bg-gradient-to-r from-dervora-primary to-dervora-primary/20 mb-4" />
@@ -115,7 +161,6 @@ export const ProductMatchesPage: React.FC = () => {
               Produk yang paling cocok dengan profil kulitmu.
             </p>
 
-            {/* Profile Summary */}
             <div className="mt-5 flex flex-wrap items-center gap-2">
               <span className="font-body text-sm text-dervora-dark/60">Berdasarkan profil:</span>
               <span className="px-3 py-1 bg-dervora-primary/10 text-dervora-primary rounded-full font-body text-xs font-medium">
@@ -146,10 +191,8 @@ export const ProductMatchesPage: React.FC = () => {
           </header>
         </FadeIn>
 
-        {/* Filters */}
         <FadeIn delay={0.1}>
           <div className="bg-white rounded-2xl border border-dervora-beige p-4 md:p-5 mb-6">
-            {/* Search */}
             <div className="relative mb-4">
               <Search
                 size={18}
@@ -164,10 +207,8 @@ export const ProductMatchesPage: React.FC = () => {
               />
             </div>
 
-            {/* Category + Sort */}
             <div className="flex flex-col md:flex-row md:items-center gap-4">
-              {/* Categories */}
-              <div className="flex gap-2 overflow-x-auto pb-1 flex-1">
+              <div className="flex gap-2 overflow-x-auto pb-1 flex-1 [&::-webkit-scrollbar]:hidden">
                 {CATEGORIES.map((cat) => (
                   <button
                     key={cat}
@@ -183,25 +224,18 @@ export const ProductMatchesPage: React.FC = () => {
                 ))}
               </div>
 
-              {/* Sort */}
-              <div className="flex items-center gap-2">
-                <Filter size={16} className="text-dervora-dark/50" />
-                <select
+              <div className="flex-shrink-0">
+                <CustomDropdown
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as SortOption)}
-                  className="px-3 py-2 rounded-xl border border-dervora-beige bg-white font-body text-sm focus:outline-none focus:ring-2 focus:ring-dervora-primary/50"
-                >
-                  <option value="match">Match Tertinggi</option>
-                  <option value="price-low">Harga Terendah</option>
-                  <option value="price-high">Harga Tertinggi</option>
-                  <option value="rating">Rating Tertinggi</option>
-                </select>
+                  options={MATCH_SORT_OPTIONS}
+                  onChange={(val) => setSortBy(val as SortOption)}
+                  align="right"
+                />
               </div>
             </div>
           </div>
         </FadeIn>
 
-        {/* Loading */}
         {loading && (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-5">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -210,7 +244,6 @@ export const ProductMatchesPage: React.FC = () => {
           </div>
         )}
 
-        {/* Error */}
         {!loading && error && (
           <div className="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
             <p className="font-body text-red-700 mb-3">Gagal memuat produk: {error}</p>
@@ -220,7 +253,6 @@ export const ProductMatchesPage: React.FC = () => {
           </div>
         )}
 
-        {/* Empty */}
         {!loading && !error && matchedProducts.length === 0 && (
           <div className="text-center py-16">
             <p className="font-heading italic text-xl text-dervora-dark/60">
@@ -229,7 +261,6 @@ export const ProductMatchesPage: React.FC = () => {
           </div>
         )}
 
-        {/* Matches Grid */}
         {!loading && !error && matchedProducts.length > 0 && (
           <>
             <p className="font-body text-sm text-dervora-dark/60 mb-6">
@@ -244,13 +275,12 @@ export const ProductMatchesPage: React.FC = () => {
               ))}
             </div>
 
-            {/* Tombol Load More */}
             {visibleCount < matchedProducts.length && (
               <div className="flex justify-center mt-10">
-                <Button 
-                  variant="outline" 
-                  size="lg" 
-                  onClick={() => setVisibleCount(prev => prev + 24)}
+                <Button
+                  variant="outline"
+                  size="lg"
+                  onClick={() => setVisibleCount((prev) => prev + 24)}
                 >
                   Tampilkan Lebih Banyak
                 </Button>

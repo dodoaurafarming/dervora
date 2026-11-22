@@ -1,5 +1,7 @@
 import React from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext'; // <-- IMPORT BARU
+
 import { Navbar } from './components/layout/Navbar';
 import { BottomNav } from './components/layout/BottomNav';
 import { Footer } from './components/layout/Footer';
@@ -45,68 +47,68 @@ const PublicLayout: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <Router>
-      <Routes>
-        {/* ==================== PUBLIC ROUTES ==================== */}
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/products" element={<ProductsPage />} />
-          <Route path="/products/:id" element={<ProductDetailPage />} />
-          <Route path="/ingredients" element={<IngredientsPage />} />
-          <Route path="/ingredients/:id" element={<IngredientDetailPage />} />
-          <Route path="/my-routine" element={<RoutinePage />} />
+    <AuthProvider> {/* <-- WRAPPER BARU UNTUK KONTEKS AUTH */}
+      <Router>
+        <Routes>
+          {/* ==================== PUBLIC ROUTES ==================== */}
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/products" element={<ProductsPage />} />
+            <Route path="/products/:id" element={<ProductDetailPage />} />
+            <Route path="/ingredients" element={<IngredientsPage />} />
+            <Route path="/ingredients/:id" element={<IngredientDetailPage />} />
+            <Route path="/my-routine" element={<RoutinePage />} />
+            
+            {/* Rute Profil & Settings */}
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            
+            <Route path="/skin-profile" element={<SkinProfilePage />} />
+            <Route path="/matches" element={<ProductMatchesPage />} />
+            <Route path="/quiz" element={<QuizPage />} />
+            
+            {/* RUTE HALAMAN STATIS BARU */}
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="/feedback" element={<FeedbackPage />} />
+          </Route>
+
+          {/* ==================== ADMIN ROUTES ==================== */}
+          <Route path="/dervora-control-9k2x/login" element={<LoginPage />} />
           
-          {/* Rute Profil & Settings */}
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/settings" element={<SettingsPage />} />
-          
-          <Route path="/skin-profile" element={<SkinProfilePage />} />
-          <Route path="/matches" element={<ProductMatchesPage />} />
-          <Route path="/quiz" element={<QuizPage />} />
-          
-          {/* RUTE HALAMAN STATIS BARU */}
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/contact" element={<ContactPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="/feedback" element={<FeedbackPage />} />
-        </Route>
+          <Route
+            path="/dervora-control-9k2x/dashboard"
+            element={
+              <AdminProtectedRoute>
+                <DashboardPage />
+              </AdminProtectedRoute>
+            }
+          />
 
-        {/* ==================== ADMIN ROUTES ==================== */}
-        <Route path="/dervora-control-9k2x/login" element={<LoginPage />} />
-        
-        <Route
-          path="/dervora-control-9k2x/dashboard"
-          element={
-            <AdminProtectedRoute>
-              <DashboardPage />
-            </AdminProtectedRoute>
-          }
-        />
+          <Route
+            path="/dervora-control-9k2x/ingredients"
+            element={
+              <AdminProtectedRoute>
+                <AdminIngredientsPage />
+              </AdminProtectedRoute>
+            }
+          />
 
-        {/* Menu Admin Ingredients (Tabel lama) */}
-        <Route
-          path="/dervora-control-9k2x/ingredients"
-          element={
-            <AdminProtectedRoute>
-              <AdminIngredientsPage />
-            </AdminProtectedRoute>
-          }
-        />
+          <Route
+            path="/dervora-control-9k2x/catalog"
+            element={
+              <AdminProtectedRoute>
+                <AdminCatalogPage />
+              </AdminProtectedRoute>
+            }
+          />
 
-        {/* Menu Admin Catalog (Tabel baru yang rapi) */}
-        <Route
-          path="/dervora-control-9k2x/catalog"
-          element={
-            <AdminProtectedRoute>
-              <AdminCatalogPage />
-            </AdminProtectedRoute>
-          }
-        />
-
-        {/* ==================== FALLBACK ==================== */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Router>
+          {/* ==================== FALLBACK ==================== */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
 };
 

@@ -1,5 +1,5 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/Button';
 import { FeaturesSection } from '../../components/home/FeaturesSection';
 import { ProductCard } from '../../components/product/ProductCard';
@@ -7,13 +7,25 @@ import { FadeIn } from '../../components/ui/FadeIn';
 import { getImageUrl } from '../../utils/imageUrl';
 import { useProducts } from '../../hooks/useProducts';
 import { ProductCardSkeleton } from '../../components/ui/ProductCardSkeleton';
+import { useAuth } from '../../context/AuthContext';
+import { LogIn, Sparkles } from 'lucide-react';
 
 export const HomePage: React.FC = () => {
   const { products, loading } = useProducts({ page: 1, limit: 4 });
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [showLoginWarning, setShowLoginWarning] = useState(false);
+
+  const handleQuizClick = () => {
+    if (user) {
+      navigate('/quiz');
+    } else {
+      setShowLoginWarning(true);
+    }
+  };
 
   return (
     <>
-      {/* Hero Section */}
       <section className="relative w-full h-[70vh] md:h-[50vh] min-h-[500px] overflow-hidden">
         <img
           src={getImageUrl('images/hero.jpg')}
@@ -35,11 +47,17 @@ export const HomePage: React.FC = () => {
             </p>
 
             <div className="flex flex-col md:flex-row gap-3 md:gap-4 mt-6 md:mt-8">
-              <Link to="/quiz">
-                <Button variant="primary" size="lg" className="whitespace-nowrap px-6">
+              <div>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="whitespace-nowrap px-6"
+                  onClick={handleQuizClick}
+                >
                   ✦ Start Skin Quiz
                 </Button>
-              </Link>
+              </div>
+
               <Link to="/products">
                 <Button variant="outline" size="lg" className="whitespace-nowrap px-6">
                   Explore Products
@@ -50,10 +68,8 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Features Section */}
       <FeaturesSection />
 
-      {/* Featured Products Section */}
       <section className="w-full bg-dervora-cream pt-4 md:pt-6 pb-8 md:pb-12 px-6 md:px-12 lg:px-20">
         <div className="flex items-end justify-between mb-8 md:mb-12 max-w-6xl mx-auto">
           <FadeIn>
@@ -95,7 +111,6 @@ export const HomePage: React.FC = () => {
         </Link>
       </section>
 
-      {/* CTA Section */}
       <section className="relative w-full min-h-[380px] md:min-h-[450px] overflow-hidden flex items-center justify-center">
         <img
           src={getImageUrl('images/cta-bg.jpg')}
@@ -118,15 +133,68 @@ export const HomePage: React.FC = () => {
             </p>
 
             <div className="mt-8 md:mt-10">
-              <Link to="/quiz">
-                <Button variant="primary" size="lg" className="whitespace-nowrap px-8">
-                  Take the Quiz
-                </Button>
-              </Link>
+              <button
+                onClick={handleQuizClick}
+                className="whitespace-nowrap px-8 py-3 bg-dervora-primary text-dervora-cream rounded-full font-heading text-lg font-semibold shadow-md hover:bg-dervora-primary-dark hover:shadow-lg transition-all duration-300 inline-flex items-center justify-center gap-2"
+              >
+                <Sparkles size={18} />
+                Take the Quiz
+              </button>
             </div>
           </FadeIn>
         </div>
       </section>
+
+      {showLoginWarning && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center px-6"
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            onClick={() => setShowLoginWarning(false)}
+            className="absolute inset-0 bg-dervora-dark/40 backdrop-blur-sm"
+          />
+
+          <div className="relative w-full max-w-md bg-dervora-cream rounded-3xl shadow-2xl border border-dervora-beige p-8 md:p-10">
+            <div className="flex justify-center mb-5">
+              <div className="w-16 h-16 rounded-full bg-dervora-primary/10 flex items-center justify-center border border-dervora-primary/20">
+                <LogIn size={30} className="text-dervora-primary" />
+              </div>
+            </div>
+
+            <h2 className="font-heading text-2xl md:text-3xl font-bold text-dervora-primary text-center mb-2">
+              Yuk, Login Dulu ♡
+            </h2>
+
+            <p className="font-body text-dervora-dark/70 text-center text-sm md:text-base leading-relaxed mb-2">
+              Skin Quiz akan menyimpan hasil analisis kulitmu secara permanen di akun Dervora.
+            </p>
+            <p className="font-body text-dervora-dark/50 text-center text-xs md:text-sm leading-relaxed mb-8">
+              Dengan begitu, rekomendasi produk dan rutinitas skincare-mu bisa terus berkembang seiring waktu.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <button
+                onClick={() => setShowLoginWarning(false)}
+                className="flex-1 px-5 py-3 rounded-full font-heading font-semibold text-dervora-dark bg-white border border-dervora-beige hover:border-dervora-primary hover:text-dervora-primary transition-all duration-300"
+              >
+                Nanti Saja
+              </button>
+              <button
+                onClick={() => {
+                  setShowLoginWarning(false);
+                  navigate('/profile');
+                }}
+                className="flex-1 px-5 py-3 rounded-full font-heading font-semibold text-white bg-dervora-primary hover:bg-dervora-primary-dark shadow-md hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <LogIn size={18} />
+                Masuk Sekarang
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

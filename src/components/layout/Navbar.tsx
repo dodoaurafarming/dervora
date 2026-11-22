@@ -1,12 +1,13 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Bell } from 'lucide-react';
-import { Button } from '../ui/Button';
+import { User } from 'lucide-react';
 import { getImageUrl } from '../../utils/imageUrl';
+import { useAuth } from '../../context/AuthContext';
+import { NotificationDropdown } from './NotificationDropdown';
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
-  const isLoggedIn = false;
+  const { user, isLoading, loginWithGoogle } = useAuth();
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -17,21 +18,18 @@ export const Navbar: React.FC = () => {
 
   return (
     <nav className="sticky top-0 z-50 flex justify-between items-center bg-dervora-cream p-4 shadow-dervora">
-      {/* Kiri: Logo */}
       <Link to="/" className="flex items-center gap-3">
-        <img 
+        <img
           src={getImageUrl('images/logo-icon.png')}
-          alt="Dervora Logo" 
-          className="w-12 h-12 object-contain" 
+          alt="Dervora Logo"
+          className="w-12 h-12 object-contain"
         />
         <span className="font-heading text-3xl font-bold text-dervora-primary tracking-wide">
           Dervora
         </span>
       </Link>
 
-      {/* Kanan: Menu Desktop & Actions */}
       <div className="flex items-center gap-8">
-        {/* Menu Desktop */}
         <div className="hidden md:flex gap-6">
           {navLinks.map((link) => {
             const isActive = location.pathname === link.path;
@@ -51,28 +49,38 @@ export const Navbar: React.FC = () => {
           })}
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-4">
-          <button className="text-dervora-dark focus:outline-none hover:text-dervora-primary transition-colors">
-            <Bell size={20} />
-          </button>
+        <div className="flex items-center gap-3">
+          <NotificationDropdown />
 
-          {isLoggedIn ? (
-            <Link to="/profile">
-              <img
-                src={getImageUrl('images/logo-icon.png')}
-                alt="Profile"
-                className="w-8 h-8 rounded-full object-cover border border-dervora-primary"
-              />
+          {isLoading ? (
+            <div className="w-9 h-9 rounded-full bg-gray-200 animate-pulse" />
+          ) : user ? (
+            <Link
+              to="/profile"
+              className="flex items-center gap-2 pl-1 pr-3 py-1 rounded-full bg-white/60 border border-dervora-beige hover:border-dervora-primary hover:shadow-sm transition-all duration-300"
+            >
+              {user.photoUrl ? (
+                <img
+                  src={user.photoUrl}
+                  alt={user.name || 'Profile'}
+                  className="w-9 h-9 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-dervora-primary/10 flex items-center justify-center text-dervora-primary">
+                  <User size={18} />
+                </div>
+              )}
+              <span className="hidden md:block font-body text-sm font-semibold text-dervora-dark">
+                {user.name?.split(' ')[0] || 'User'}
+              </span>
             </Link>
           ) : (
-            <Button 
-              variant="primary" 
-              size="sm" 
+            <button
+              onClick={loginWithGoogle}
               className="font-heading text-lg font-semibold px-6 py-2.5 bg-dervora-primary text-dervora-cream rounded-full hover:bg-dervora-primary-dark transition-all duration-300 shadow-md hover:shadow-lg"
             >
-              Try Dervora
-            </Button>
+              Masuk
+            </button>
           )}
         </div>
       </div>
