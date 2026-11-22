@@ -6,7 +6,7 @@ import {
   type User as FirebaseUser,
 } from 'firebase/auth';
 import { auth, googleProvider } from '../lib/firebase';
-import { useQuizStore } from '../store/quizStore';
+import { useQuizStore, type RemoteSkinProfile } from '../store/quizStore';
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://dervora-backend.vercel.app';
 
@@ -51,10 +51,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       const result = await response.json();
       const loggedInUser: UserData | null = result.data?.user || result.user || null;
+      const remoteSkinProfile: RemoteSkinProfile | null =
+        result.data?.skinProfile ?? result.skinProfile ?? null;
 
       if (loggedInUser) {
         const accountKey = String(loggedInUser.id ?? loggedInUser.email);
-        useQuizStore.getState().loadUserQuiz(accountKey);
+        useQuizStore.getState().loadUserQuiz(accountKey, remoteSkinProfile);
       } else {
         useQuizStore.getState().clearActiveSession();
       }
