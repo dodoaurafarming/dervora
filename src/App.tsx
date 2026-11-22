@@ -1,6 +1,6 @@
 import React from 'react';
-import { HashRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext'; // <-- IMPORT BARU
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
 
 import { Navbar } from './components/layout/Navbar';
 import { BottomNav } from './components/layout/BottomNav';
@@ -19,19 +19,16 @@ import { ProductMatchesPage } from './pages/product-matches/ProductMatchesPage';
 import { AdminIngredientsPage } from './pages/admin/AdminIngredientsPage';
 import { AdminCatalogPage } from './pages/admin/AdminCatalogPage';
 
-// IMPORT HALAMAN STATIS BARU
 import { AboutPage } from './pages/static/AboutPage';
 import { ContactPage } from './pages/static/ContactPage';
 import { PrivacyPage } from './pages/static/PrivacyPage';
 import { FeedbackPage } from './pages/static/FeedbackPage';
 
-// IMPORT HALAMAN PROFIL & PENGATURAN
 import { ProfilePage } from './pages/profile/ProfilePage';
 import { SettingsPage } from './pages/profile/SettingsPage';
 
 import { AdminProtectedRoute } from './components/admin/AdminProtectedRoute';
 
-// ==================== PUBLIC LAYOUT ====================
 const PublicLayout: React.FC = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -47,10 +44,9 @@ const PublicLayout: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider> {/* <-- WRAPPER BARU UNTUK KONTEKS AUTH */}
-      <Router>
+    <AuthProvider>
+      <BrowserRouter>
         <Routes>
-          {/* ==================== PUBLIC ROUTES ==================== */}
           <Route element={<PublicLayout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/products" element={<ProductsPage />} />
@@ -58,25 +54,23 @@ export const App: React.FC = () => {
             <Route path="/ingredients" element={<IngredientsPage />} />
             <Route path="/ingredients/:id" element={<IngredientDetailPage />} />
             <Route path="/my-routine" element={<RoutinePage />} />
-            
-            {/* Rute Profil & Settings */}
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
-            
             <Route path="/skin-profile" element={<SkinProfilePage />} />
             <Route path="/matches" element={<ProductMatchesPage />} />
             <Route path="/quiz" element={<QuizPage />} />
-            
-            {/* RUTE HALAMAN STATIS BARU */}
             <Route path="/about" element={<AboutPage />} />
             <Route path="/contact" element={<ContactPage />} />
             <Route path="/privacy" element={<PrivacyPage />} />
             <Route path="/feedback" element={<FeedbackPage />} />
           </Route>
 
-          {/* ==================== ADMIN ROUTES ==================== */}
+          <Route
+            path="/dervora-control-9k2x"
+            element={<Navigate to="/dervora-control-9k2x/dashboard" replace />}
+          />
           <Route path="/dervora-control-9k2x/login" element={<LoginPage />} />
-          
+
           <Route
             path="/dervora-control-9k2x/dashboard"
             element={
@@ -104,10 +98,9 @@ export const App: React.FC = () => {
             }
           />
 
-          {/* ==================== FALLBACK ==================== */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-      </Router>
+      </BrowserRouter>
     </AuthProvider>
   );
 };
