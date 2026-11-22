@@ -89,7 +89,7 @@ export interface Product {
   notes: string | null;
   skinTypes: string[] | null;
   concerns: string[] | null;
-  buyLink?: string | null; // <-- TAMBAHKAN BARIS INI
+  buyLink?: string | null;
   deletedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -119,27 +119,84 @@ export interface CatalogDetail extends IngredientCatalog {
   products: Product[];
 }
 
+// ==================== IN-MEMORY CACHE (PUBLIC GET) ====================
+interface CacheEntry<T> {
+  response: ApiSuccess<T>;
+  expiresAt: number;
+}
+
+const DEFAULT_CACHE_TTL_MS = 5 * 60 * 1000; // 5 menit
+const responseCache = new Map<string, CacheEntry<unknown>>();
+const inFlightRequests = new Map<string, Promise<ApiResponse<unknown>>>();
+
+export function invalidateApiCache(prefix?: string): void {
+  if (!prefix) {
+    responseCache.clear();
+    return;
+  }
+  for (const key of responseCache.keys()) {
+    if (key.startsWith(prefix)) {
+      responseCache.delete(key);
+    }
+  }
+}
+
+async function cachedGet<T>(
+  endpoint: string,
+  ttlMs = DEFAULT_CACHE_TTL_MS
+): Promise<ApiResponse<T>> {
+  const cached = responseCache.get(endpoint);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.response as ApiSuccess<T>;
+  }
+
+  const existing = inFlightRequests.get(endpoint);
+  if (existing) {
+    return existing as Promise<ApiResponse<T>>;
+  }
+
+  const fetchPromise = request<T>(endpoint).then((res) => {
+    inFlightRequests.delete(endpoint);
+    if (res.success) {
+      responseCache.set(endpoint, {
+        response: res,
+        expiresAt: Date.now() + ttlMs,
+      });
+    }
+    return res;
+  });
+
+  inFlightRequests.set(endpoint, fetchPromise as Promise<ApiResponse<unknown>>);
+  return fetchPromise;
+}
+
 // ==================== HELPER ====================
 async function authFetch<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
   const token = localStorage.getItem('dervora_admin_token');
+  const headers = new Headers(options?.headers);
+
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`);
+  }
 
   return request<T>(endpoint, {
     ...options,
-    headers: {
-      ...options?.headers,
-      ...(token && { Authorization: `Bearer ${token}` }),
-    },
+    headers,
   });
 }
 
 async function request<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
   try {
+    const headers = new Headers(options?.headers);
+
+    // Hanya pasang Content-Type JSON jika ada body (menghindari CORS preflight pada GET publik)
+    if (options?.body && !(options.body instanceof FormData) && !headers.has('Content-Type')) {
+      headers.set('Content-Type', 'application/json');
+    }
+
     const res = await fetch(`${API_URL}${endpoint}`, {
       ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...options?.headers,
-      },
+      headers,
     });
     const json = await res.json();
     return json as ApiResponse<T>;
@@ -169,11 +226,11 @@ export async function getProducts(params?: {
   if (params?.categoryId) query.set('categoryId', String(params.categoryId));
 
   const qs = query.toString();
-  return request<Product[]>(`/api/products${qs ? `?${qs}` : ''}`);
+  return cachedGet<Product[]>(`/api/products${qs ? `?${qs}` : ''}`);
 }
 
 export async function getProductById(id: number): Promise<ApiResponse<Product>> {
-  return request<Product>(`/api/products/${id}`);
+  return cachedGet<Product>(`/api/products/${id}`);
 }
 
 // ==================== BRANDS API ====================
@@ -185,7 +242,7 @@ export async function getBrands(params?: {
   if (params?.page) query.set('page', String(params.page));
   if (params?.limit) query.set('limit', String(params.limit));
   const qs = query.toString();
-  return request<Brand[]>(`/api/brands${qs ? `?${qs}` : ''}`);
+  return cachedGet<Brand[]>(`/api/brands${qs ? `?${qs}` : ''}`);
 }
 
 // ==================== ADMIN BRANDS API ====================
@@ -194,15 +251,17 @@ export async function adminCreateBrand(data: {
   country?: string;
   website?: string;
 }): Promise<ApiResponse<Brand>> {
-  return authFetch<Brand>('/api/brands', {
+  const res = await authFetch<Brand>('/api/brands', {
     method: 'POST',
     body: JSON.stringify(data),
   });
+  if (res.success) invalidateApiCache('/api/brands');
+  return res;
 }
 
 // ==================== CATEGORIES API ====================
 export async function getCategories(): Promise<ApiResponse<Category[]>> {
-  return request<Category[]>('/api/categories');
+  return cachedGet<Category[]>('/api/categories');
 }
 
 export async function adminCreateCategory(data: {
@@ -210,24 +269,26 @@ export async function adminCreateCategory(data: {
   description?: string;
   iconUrl?: string;
 }): Promise<ApiResponse<Category>> {
-  return authFetch<Category>('/api/categories', {
+  const res = await authFetch<Category>('/api/categories', {
     method: 'POST',
     body: JSON.stringify(data),
   });
+  if (res.success) invalidateApiCache('/api/categories');
+  return res;
 }
 
 // ==================== INGREDIENTS API (technical) ====================
 export async function getIngredients(): Promise<ApiResponse<Ingredient[]>> {
-  return request<Ingredient[]>('/api/ingredients');
+  return cachedGet<Ingredient[]>('/api/ingredients');
 }
 
 // ==================== INGREDIENT CATALOG API (public) ====================
 export async function getIngredientCatalog(): Promise<ApiResponse<IngredientCatalog[]>> {
-  return request<IngredientCatalog[]>('/api/ingredient-catalog');
+  return cachedGet<IngredientCatalog[]>('/api/ingredient-catalog');
 }
 
 export async function getCatalogDetail(id: number | string): Promise<ApiResponse<CatalogDetail>> {
-  return request<CatalogDetail>(`/api/ingredient-catalog/${id}`);
+  return cachedGet<CatalogDetail>(`/api/ingredient-catalog/${id}`);
 }
 
 // ==================== ADMIN API ====================
@@ -267,32 +328,54 @@ export async function adminGetProduct(id: number): Promise<ApiResponse<Product>>
 export async function adminCreateProduct(
   data: Partial<Product> & { ingredientIds?: number[] }
 ): Promise<ApiResponse<Product>> {
-  return authFetch<Product>('/api/products', {
+  const res = await authFetch<Product>('/api/products', {
     method: 'POST',
     body: JSON.stringify(data),
   });
+  if (res.success) {
+    invalidateApiCache('/api/products');
+    invalidateApiCache('/api/ingredient-catalog');
+  }
+  return res;
 }
 
 export async function adminUpdateProduct(
   id: number,
   data: Partial<Product> & { ingredientIds?: number[] }
 ): Promise<ApiResponse<Product>> {
-  return authFetch<Product>(`/api/products/${id}`, {
+  const res = await authFetch<Product>(`/api/products/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   });
+  if (res.success) {
+    invalidateApiCache('/api/products');
+    invalidateApiCache('/api/ingredient-catalog');
+  }
+  return res;
 }
 
-export async function adminDeleteProduct(id: number): Promise<ApiResponse<{ id: number; deleted: boolean }>> {
-  return authFetch<{ id: number; deleted: boolean }>(`/api/products/${id}`, {
+export async function adminDeleteProduct(
+  id: number
+): Promise<ApiResponse<{ id: number; deleted: boolean }>> {
+  const res = await authFetch<{ id: number; deleted: boolean }>(`/api/products/${id}`, {
     method: 'DELETE',
   });
+  if (res.success) {
+    invalidateApiCache('/api/products');
+    invalidateApiCache('/api/ingredient-catalog');
+  }
+  return res;
 }
 
 export async function adminRestoreProduct(id: number): Promise<ApiResponse<Product>> {
-  return authFetch<Product>(`/api/admin/products/${id}/restore`, {
+  const res = await authFetch<Product>(`/api/admin/products/${id}/restore`, {
     method: 'POST',
   });
+  if (res.success) {
+    invalidateApiCache('/api/products');
+    invalidateApiCache('/api/ingredient-catalog');
+  }
+  return res;
 }
 
 // ==================== ADMIN UPLOAD API ====================
@@ -352,28 +435,43 @@ export async function adminGetIngredient(id: number): Promise<ApiResponse<AdminI
 export async function adminCreateIngredient(
   data: Partial<AdminIngredient>
 ): Promise<ApiResponse<AdminIngredient>> {
-  return authFetch<AdminIngredient>('/api/admin/ingredients', {
+  const res = await authFetch<AdminIngredient>('/api/admin/ingredients', {
     method: 'POST',
     body: JSON.stringify(data),
   });
+  if (res.success) {
+    invalidateApiCache('/api/ingredients');
+    invalidateApiCache('/api/products');
+  }
+  return res;
 }
 
 export async function adminUpdateIngredient(
   id: number,
   data: Partial<AdminIngredient>
 ): Promise<ApiResponse<AdminIngredient>> {
-  return authFetch<AdminIngredient>(`/api/admin/ingredients/${id}`, {
+  const res = await authFetch<AdminIngredient>(`/api/admin/ingredients/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   });
+  if (res.success) {
+    invalidateApiCache('/api/ingredients');
+    invalidateApiCache('/api/products');
+  }
+  return res;
 }
 
 export async function adminDeleteIngredient(
   id: number
 ): Promise<ApiResponse<{ id: number; deleted: boolean }>> {
-  return authFetch<{ id: number; deleted: boolean }>(`/api/admin/ingredients/${id}`, {
+  const res = await authFetch<{ id: number; deleted: boolean }>(`/api/admin/ingredients/${id}`, {
     method: 'DELETE',
   });
+  if (res.success) {
+    invalidateApiCache('/api/ingredients');
+    invalidateApiCache('/api/products');
+  }
+  return res;
 }
 
 export async function adminUploadIngredientImage(
@@ -422,26 +520,35 @@ export async function adminListCatalog(params?: {
 export async function adminCreateCatalog(
   data: Partial<IngredientCatalog>
 ): Promise<ApiResponse<IngredientCatalog>> {
-  return authFetch<IngredientCatalog>('/api/admin/ingredient-catalog', {
+  const res = await authFetch<IngredientCatalog>('/api/admin/ingredient-catalog', {
     method: 'POST',
     body: JSON.stringify(data),
   });
+  if (res.success) invalidateApiCache('/api/ingredient-catalog');
+  return res;
 }
 
 export async function adminUpdateCatalog(
   id: number,
   data: Partial<IngredientCatalog>
 ): Promise<ApiResponse<IngredientCatalog>> {
-  return authFetch<IngredientCatalog>(`/api/admin/ingredient-catalog/${id}`, {
+  const res = await authFetch<IngredientCatalog>(`/api/admin/ingredient-catalog/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   });
+  if (res.success) invalidateApiCache('/api/ingredient-catalog');
+  return res;
 }
 
 export async function adminDeleteCatalog(
   id: number
 ): Promise<ApiResponse<{ id: number; deleted: boolean }>> {
-  return authFetch<{ id: number; deleted: boolean }>(`/api/admin/ingredient-catalog/${id}`, {
-    method: 'DELETE',
-  });
+  const res = await authFetch<{ id: number; deleted: boolean }>(
+    `/api/admin/ingredient-catalog/${id}`,
+    {
+      method: 'DELETE',
+    }
+  );
+  if (res.success) invalidateApiCache('/api/ingredient-catalog');
+  return res;
 }
