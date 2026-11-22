@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /dervora-control-9k2x
+
+Sitemap: https://www.dervorayourskin.com/sitemap.xml
